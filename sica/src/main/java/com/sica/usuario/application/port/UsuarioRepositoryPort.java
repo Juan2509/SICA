@@ -1,5 +1,7 @@
 package com.sica.usuario.application.port;
 
+import java.util.Optional;
+
 import com.sica.usuario.domain.Usuario;
 
 /**
@@ -11,4 +13,6 @@ public interface UsuarioRepositoryPort {
     Usuario guardar(Usuario usuario);
 
     boolean existePorUsername(String username);
+
+    Optional<Usuario> buscarPorUsername(String username);
 }

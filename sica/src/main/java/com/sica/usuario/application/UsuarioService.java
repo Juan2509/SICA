@@ -1,5 +1,6 @@
 package com.sica.usuario.application;
 
+import com.sica.autorizacion.application.AutorizacionService;
 import com.sica.usuario.application.exception.UsuarioDuplicadoException;
 import com.sica.usuario.application.exception.UsuarioInvalidoException;
 import com.sica.usuario.application.port.BitacoraAuditoriaPort;
@@ -12,12 +13,17 @@ import com.sica.usuario.domain.Usuario;
  */
 public class UsuarioService {
 
+    private static final String PERMISO_CREAR_USUARIO = "crear_usuario";
+
     private final UsuarioRepositoryPort usuarioRepository;
     private final BitacoraAuditoriaPort bitacoraAuditoria;
+    private final AutorizacionService autorizacionService;
 
-    public UsuarioService(UsuarioRepositoryPort usuarioRepository, BitacoraAuditoriaPort bitacoraAuditoria) {
+    public UsuarioService(UsuarioRepositoryPort usuarioRepository, BitacoraAuditoriaPort bitacoraAuditoria,
+                           AutorizacionService autorizacionService) {
         this.usuarioRepository = usuarioRepository;
         this.bitacoraAuditoria = bitacoraAuditoria;
+        this.autorizacionService = autorizacionService;
     }
 
     /**
@@ -28,11 +34,13 @@ public class UsuarioService {
      * @param username            identificador unico de acceso (obligatorio, no se puede repetir)
      * @param password            contrasena del usuario (obligatorio)
      * @param rolId               id del rol asociado (obligatorio)
-     * @param usuarioResponsable  username de quien realiza la accion (para la bitacora)
+     * @param usuarioResponsable  username de quien realiza la accion (se valida su permiso y queda en la bitacora)
      * @return el usuario creado, con su id ya asignado
      */
     public Usuario crearUsuario(String nombre, String documento, String username,
                                  String password, Long rolId, String usuarioResponsable) {
+
+        autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_CREAR_USUARIO);
 
         validarDatosObligatorios(nombre, documento, username, password, rolId);
 

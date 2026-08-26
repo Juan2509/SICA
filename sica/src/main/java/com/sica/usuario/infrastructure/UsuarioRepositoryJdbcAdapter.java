@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Optional;
 
 import com.sica.infraestructura.ConexionBD;
 import com.sica.usuario.application.port.UsuarioRepositoryPort;
@@ -61,6 +62,36 @@ public class UsuarioRepositoryJdbcAdapter implements UsuarioRepositoryPort {
 
         } catch (SQLException e) {
             throw new RuntimeException("Error al verificar si el usuario existe.", e);
+        }
+    }
+
+    @Override
+    public Optional<Usuario> buscarPorUsername(String username) {
+        String sql = "SELECT id, nombre, documento, username, password, rol_id "
+                + "FROM usuarios WHERE username = ?";
+
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+
+            statement.setString(1, username);
+
+            try (ResultSet resultado = statement.executeQuery()) {
+                if (resultado.next()) {
+                    Usuario usuario = new Usuario(
+                            resultado.getString("nombre"),
+                            resultado.getString("documento"),
+                            resultado.getString("username"),
+                            resultado.getString("password"),
+                            resultado.getLong("rol_id")
+                    );
+                    usuario.setId(resultado.getLong("id"));
+                    return Optional.of(usuario);
+                }
+                return Optional.empty();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar el usuario por username.", e);
         }
     }
 }
