@@ -1,5 +1,6 @@
 package com.sica.visita.application.port;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.sica.visita.domain.Visita;
@@ -13,4 +14,6 @@ public interface VisitaRepositoryPort {
     Visita guardar(Visita visita);
 
     List<Visita> listarPorInvitado(Long invitadoId);
+
+    void registrarCheckIn(Long visitaId, LocalDateTime fechaHoraCheckIn, String usuarioCheckIn);
 }

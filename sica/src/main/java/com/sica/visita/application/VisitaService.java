@@ -6,6 +6,7 @@ import com.sica.persona.application.port.PersonaRepositoryPort;
 import com.sica.persona.domain.Persona;
 import com.sica.usuario.application.port.BitacoraAuditoriaPort;
 import com.sica.visita.application.dto.DetalleVisitaConsulta;
+import com.sica.visita.application.exception.AccesoNoAutorizadoException;
 import com.sica.visita.application.exception.VisitaInvalidaException;
 import com.sica.visita.application.exception.VisitaNoEncontradaException;
 import com.sica.visita.application.port.VisitaRepositoryPort;
@@ -22,6 +23,7 @@ public class VisitaService {
 
     private static final String PERMISO_REGISTRAR_VISITA = "registrar_visita";
     private static final String PERMISO_CONSULTAR_VISITA = "consultar_visita";
+    private static final String PERMISO_REGISTRAR_CHECKIN = "registrar_checkin";
 
     private final VisitaRepositoryPort visitaRepository;
     private final PersonaRepositoryPort personaRepository;
@@ -113,6 +115,50 @@ public class VisitaService {
                 personaVisitada.getNombre(),
                 visitaMasReciente.getEstado()
         );
+    }
+
+    /**
+     * Registra el check-in (entrada) de una persona, a partir de su documento (E4-HU01).
+     * Solo se permite si su visita mas reciente esta en estado APROBADO.
+     *
+     * @param documentoVisitante  documento de la persona que va a ingresar
+     * @param usuarioResponsable  username del guarda que realiza el check-in (se valida su permiso y queda en la bitacora)
+     */
+    public Visita registrarCheckIn(String documentoVisitante, String usuarioResponsable) {
+        autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_REGISTRAR_CHECKIN);
+
+        Persona visitante = personaRepository.buscarPorDocumento(documentoVisitante)
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe ninguna persona registrada con el documento: " + documentoVisitante));
+
+        List<Visita> visitas = visitaRepository.listarPorInvitado(visitante.getId());
+
+        if (visitas.isEmpty()) {
+            throw new VisitaNoEncontradaException(
+                    "No hay ninguna visita registrada para el documento: " + documentoVisitante);
+        }
+
+        Visita visitaMasReciente = visitas.get(0);
+
+        if (visitaMasReciente.getEstado() != EstadoVisita.APROBADO) {
+            throw new AccesoNoAutorizadoException(
+                    "El ingreso no esta autorizado. Estado actual de la visita: " + visitaMasReciente.getEstado());
+        }
+
+        LocalDateTime ahora = LocalDateTime.now();
+        visitaRepository.registrarCheckIn(visitaMasReciente.getId(), ahora, usuarioResponsable);
+
+        visitaMasReciente.setEstado(EstadoVisita.DENTRO);
+        visitaMasReciente.setFechaHoraCheckIn(ahora);
+        visitaMasReciente.setUsuarioCheckIn(usuarioResponsable);
+
+        bitacoraAuditoria.registrar(
+                "REGISTRAR_CHECKIN",
+                "Se registro el check-in de " + visitante.getNombre() + " (documento: " + documentoVisitante + ")",
+                usuarioResponsable
+        );
+
+        return visitaMasReciente;
     }
 
     private void validarDatosObligatorios(Long invitadoId, Long personaVisitadaId, LocalDateTime fechaHoraVisita) {

@@ -12,6 +12,8 @@ public class Visita {
     private Long personaVisitadaId;
     private LocalDateTime fechaHoraVisita;
     private EstadoVisita estado;
+    private LocalDateTime fechaHoraCheckIn;
+    private String usuarioCheckIn;
 
     public Visita(Long invitadoId, Long personaVisitadaId, LocalDateTime fechaHoraVisita, EstadoVisita estado) {
         this.invitadoId = invitadoId;
@@ -42,5 +44,25 @@ public class Visita {
 
     public EstadoVisita getEstado() {
         return estado;
+    }
+
+    public void setEstado(EstadoVisita estado) {
+        this.estado = estado;
+    }
+
+    public LocalDateTime getFechaHoraCheckIn() {
+        return fechaHoraCheckIn;
+    }
+
+    public void setFechaHoraCheckIn(LocalDateTime fechaHoraCheckIn) {
+        this.fechaHoraCheckIn = fechaHoraCheckIn;
+    }
+
+    public String getUsuarioCheckIn() {
+        return usuarioCheckIn;
+    }
+
+    public void setUsuarioCheckIn(String usuarioCheckIn) {
+        this.usuarioCheckIn = usuarioCheckIn;
     }
 }
