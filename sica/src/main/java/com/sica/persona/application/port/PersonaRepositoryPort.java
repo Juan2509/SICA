@@ -1,5 +1,7 @@
 package com.sica.persona.application.port;
 
+import java.util.Optional;
+
 import com.sica.persona.domain.Persona;
 
 /**
@@ -15,4 +17,6 @@ public interface PersonaRepositoryPort {
     boolean existePorId(Long id);
 
     void asociarEmpresa(Long personaId, Long empresaId);
+
+    Optional<Persona> buscarPorDocumento(String documento);
 }

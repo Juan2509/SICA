@@ -1,14 +1,16 @@
 package com.sica.persona.infrastructure;
 
+import com.sica.infraestructura.ConexionBD;
+import com.sica.persona.application.port.PersonaRepositoryPort;
+import com.sica.persona.domain.Persona;
+import com.sica.persona.domain.TipoPersona;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import com.sica.infraestructura.ConexionBD;
-import com.sica.persona.application.port.PersonaRepositoryPort;
-import com.sica.persona.domain.Persona;
+import java.util.Optional;
 
 /**
  * Adaptador de salida (hexagonal): implementa PersonaRepositoryPort
@@ -92,6 +94,34 @@ public class PersonaRepositoryJdbcAdapter implements PersonaRepositoryPort {
 
         } catch (SQLException e) {
             throw new RuntimeException("Error al asociar la empresa a la persona.", e);
+        }
+    }
+
+    @Override
+    public Optional<Persona> buscarPorDocumento(String documento) {
+        String sql = "SELECT id, nombre, documento, tipo, empresa_id FROM personas WHERE documento = ?";
+
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+
+            statement.setString(1, documento);
+
+            try (ResultSet resultado = statement.executeQuery()) {
+                if (resultado.next()) {
+                    Persona persona = new Persona(
+                            resultado.getString("nombre"),
+                            resultado.getString("documento"),
+                            TipoPersona.valueOf(resultado.getString("tipo"))
+                    );
+                    persona.setId(resultado.getLong("id"));
+                    persona.setEmpresaId(resultado.getObject("empresa_id", Long.class));
+                    return Optional.of(persona);
+                }
+                return Optional.empty();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar la persona por documento.", e);
         }
     }
 }

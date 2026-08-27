@@ -11,14 +11,17 @@ import com.sica.persona.domain.Persona;
 import com.sica.persona.domain.TipoPersona;
 import com.sica.usuario.application.port.BitacoraAuditoriaPort;
 
+import java.util.Optional;
+
 /**
- * Servicio de aplicacion para la Historia de Usuario E2-HU01 (Registrar persona)
- * y para la asociacion de una persona con una empresa (E2-HU02).
+ * Servicio de aplicacion para E2-HU01 (Registrar persona), E2-HU02 (asociar
+ * empresa) y E2-HU03 (Consultar persona por documento).
  */
 public class PersonaService {
 
     private static final String PERMISO_REGISTRAR_PERSONA = "registrar_persona";
     private static final String PERMISO_GESTIONAR_EMPRESAS = "gestionar_empresas";
+    private static final String PERMISO_CONSULTAR_PERSONA = "consultar_persona";
 
     private final PersonaRepositoryPort personaRepository;
     private final EmpresaRepositoryPort empresaRepository;
@@ -59,10 +62,6 @@ public class PersonaService {
 
     /**
      * Asocia una persona existente a una empresa existente.
-     *
-     * @param personaId           id de la persona
-     * @param empresaId           id de la empresa
-     * @param usuarioResponsable  username de quien realiza la accion (se valida su permiso y queda en la bitacora)
      */
     public void asociarEmpresaAPersona(Long personaId, Long empresaId, String usuarioResponsable) {
         autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_GESTIONAR_EMPRESAS);
@@ -80,6 +79,26 @@ public class PersonaService {
                 "ASOCIAR_PERSONA_EMPRESA",
                 "Se asocio la persona " + personaId + " a la empresa " + empresaId,
                 usuarioResponsable
+        );
+    }
+
+    /**
+     * Busca una persona por su documento (E2-HU03).
+     * NOTA: la informacion de visita activa (Epica E3) y restricciones (Epica E7)
+     * todavia no existe en el sistema. Cuando se implementen esas epicas, este
+     * metodo (o quien lo llame) debera complementarse con esos datos.
+     *
+     * @param documento           documento de la persona a buscar
+     * @param usuarioResponsable  username de quien realiza la busqueda (se valida su permiso)
+     * @return la persona encontrada
+     */
+    public Persona consultarPersonaPorDocumento(String documento, String usuarioResponsable) {
+        autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_CONSULTAR_PERSONA);
+
+        Optional<Persona> personaEncontrada = personaRepository.buscarPorDocumento(documento);
+
+        return personaEncontrada.orElseThrow(() ->
+                new PersonaNoEncontradaException("No existe ninguna persona registrada con el documento: " + documento)
         );
     }
 
