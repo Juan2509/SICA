@@ -1,0 +1,16 @@
+package com.sica.visita.application.port;
+
+import java.util.List;
+
+import com.sica.visita.domain.Visita;
+
+/**
+ * Puerto de salida (hexagonal): define lo que la capa de aplicacion
+ * necesita del repositorio de visitas, sin saber como esta implementado.
+ */
+public interface VisitaRepositoryPort {
+
+    Visita guardar(Visita visita);
+
+    List<Visita> listarPorInvitado(Long invitadoId);
+}
