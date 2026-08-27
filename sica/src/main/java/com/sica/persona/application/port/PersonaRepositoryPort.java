@@ -19,4 +19,6 @@ public interface PersonaRepositoryPort {
     void asociarEmpresa(Long personaId, Long empresaId);
 
     Optional<Persona> buscarPorDocumento(String documento);
+
+    Optional<Persona> buscarPorId(Long id);
 }

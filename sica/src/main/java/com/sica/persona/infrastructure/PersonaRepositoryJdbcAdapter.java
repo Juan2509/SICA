@@ -1,16 +1,16 @@
 package com.sica.persona.infrastructure;
 
-import com.sica.infraestructura.ConexionBD;
-import com.sica.persona.application.port.PersonaRepositoryPort;
-import com.sica.persona.domain.Persona;
-import com.sica.persona.domain.TipoPersona;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
+
+import com.sica.infraestructura.ConexionBD;
+import com.sica.persona.application.port.PersonaRepositoryPort;
+import com.sica.persona.domain.Persona;
+import com.sica.persona.domain.TipoPersona;
 
 /**
  * Adaptador de salida (hexagonal): implementa PersonaRepositoryPort
@@ -20,7 +20,7 @@ public class PersonaRepositoryJdbcAdapter implements PersonaRepositoryPort {
 
     @Override
     public Persona guardar(Persona persona) {
-        String sql = "INSERT INTO personas (nombre, documento, tipo) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO personas (nombre, documento, tipo, foto_url) VALUES (?, ?, ?, ?)";
 
         try (Connection conexion = ConexionBD.obtenerConexion();
              PreparedStatement statement = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -28,6 +28,7 @@ public class PersonaRepositoryJdbcAdapter implements PersonaRepositoryPort {
             statement.setString(1, persona.getNombre());
             statement.setString(2, persona.getDocumento());
             statement.setString(3, persona.getTipo().name());
+            statement.setString(4, persona.getFotoUrl());
 
             statement.executeUpdate();
 
@@ -99,7 +100,7 @@ public class PersonaRepositoryJdbcAdapter implements PersonaRepositoryPort {
 
     @Override
     public Optional<Persona> buscarPorDocumento(String documento) {
-        String sql = "SELECT id, nombre, documento, tipo, empresa_id FROM personas WHERE documento = ?";
+        String sql = "SELECT id, nombre, documento, tipo, empresa_id, foto_url FROM personas WHERE documento = ?";
 
         try (Connection conexion = ConexionBD.obtenerConexion();
              PreparedStatement statement = conexion.prepareStatement(sql)) {
@@ -108,14 +109,7 @@ public class PersonaRepositoryJdbcAdapter implements PersonaRepositoryPort {
 
             try (ResultSet resultado = statement.executeQuery()) {
                 if (resultado.next()) {
-                    Persona persona = new Persona(
-                            resultado.getString("nombre"),
-                            resultado.getString("documento"),
-                            TipoPersona.valueOf(resultado.getString("tipo"))
-                    );
-                    persona.setId(resultado.getLong("id"));
-                    persona.setEmpresaId(resultado.getObject("empresa_id", Long.class));
-                    return Optional.of(persona);
+                    return Optional.of(mapearPersona(resultado));
                 }
                 return Optional.empty();
             }
@@ -123,5 +117,38 @@ public class PersonaRepositoryJdbcAdapter implements PersonaRepositoryPort {
         } catch (SQLException e) {
             throw new RuntimeException("Error al buscar la persona por documento.", e);
         }
+    }
+
+    @Override
+    public Optional<Persona> buscarPorId(Long id) {
+        String sql = "SELECT id, nombre, documento, tipo, empresa_id, foto_url FROM personas WHERE id = ?";
+
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+
+            statement.setLong(1, id);
+
+            try (ResultSet resultado = statement.executeQuery()) {
+                if (resultado.next()) {
+                    return Optional.of(mapearPersona(resultado));
+                }
+                return Optional.empty();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar la persona por id.", e);
+        }
+    }
+
+    private Persona mapearPersona(ResultSet resultado) throws SQLException {
+        Persona persona = new Persona(
+                resultado.getString("nombre"),
+                resultado.getString("documento"),
+                TipoPersona.valueOf(resultado.getString("tipo"))
+        );
+        persona.setId(resultado.getLong("id"));
+        persona.setEmpresaId(resultado.getObject("empresa_id", Long.class));
+        persona.setFotoUrl(resultado.getString("foto_url"));
+        return persona;
     }
 }

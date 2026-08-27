@@ -1,5 +1,7 @@
 package com.sica.persona.application;
 
+import java.util.Optional;
+
 import com.sica.autorizacion.application.AutorizacionService;
 import com.sica.empresa.application.exception.EmpresaNoEncontradaException;
 import com.sica.empresa.application.port.EmpresaRepositoryPort;
@@ -10,8 +12,6 @@ import com.sica.persona.application.port.PersonaRepositoryPort;
 import com.sica.persona.domain.Persona;
 import com.sica.persona.domain.TipoPersona;
 import com.sica.usuario.application.port.BitacoraAuditoriaPort;
-
-import java.util.Optional;
 
 /**
  * Servicio de aplicacion para E2-HU01 (Registrar persona), E2-HU02 (asociar
@@ -38,8 +38,10 @@ public class PersonaService {
 
     /**
      * Registra una nueva persona (trabajador o invitado) en el sistema.
+     * fotoUrl es opcional (puede ser null); se usa en E3-HU02 para mostrarla al guarda.
      */
-    public Persona registrarPersona(String nombre, String documento, TipoPersona tipo, String usuarioResponsable) {
+    public Persona registrarPersona(String nombre, String documento, TipoPersona tipo, String fotoUrl,
+                                     String usuarioResponsable) {
         autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_REGISTRAR_PERSONA);
 
         validarDatosObligatorios(nombre, documento, tipo);
@@ -49,6 +51,7 @@ public class PersonaService {
         }
 
         Persona nuevaPersona = new Persona(nombre, documento, tipo);
+        nuevaPersona.setFotoUrl(fotoUrl);
         Persona personaGuardada = personaRepository.guardar(nuevaPersona);
 
         bitacoraAuditoria.registrar(

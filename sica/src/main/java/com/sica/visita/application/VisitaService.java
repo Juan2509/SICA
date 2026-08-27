@@ -1,16 +1,19 @@
 package com.sica.visita.application;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.sica.autorizacion.application.AutorizacionService;
 import com.sica.persona.application.exception.PersonaNoEncontradaException;
 import com.sica.persona.application.port.PersonaRepositoryPort;
+import com.sica.persona.domain.Persona;
 import com.sica.usuario.application.port.BitacoraAuditoriaPort;
+import com.sica.visita.application.dto.DetalleVisitaConsulta;
 import com.sica.visita.application.exception.VisitaInvalidaException;
+import com.sica.visita.application.exception.VisitaNoEncontradaException;
 import com.sica.visita.application.port.VisitaRepositoryPort;
 import com.sica.visita.domain.EstadoVisita;
 import com.sica.visita.domain.Visita;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Servicio de aplicacion para la Historia de Usuario E3-HU01 (Pre-registrar invitado).
@@ -77,6 +80,39 @@ public class VisitaService {
         }
 
         return visitaRepository.listarPorInvitado(invitadoId);
+    }
+
+    /**
+     * Busca la visita mas reciente de una persona a partir de su documento (E3-HU02).
+     * Devuelve los datos del visitante, su foto, a quien visita y el estado de la visita.
+     */
+    public DetalleVisitaConsulta consultarVisitaPorDocumento(String documentoVisitante, String usuarioResponsable) {
+        autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_CONSULTAR_VISITA);
+
+        Persona visitante = personaRepository.buscarPorDocumento(documentoVisitante)
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe ninguna persona registrada con el documento: " + documentoVisitante));
+
+        List<Visita> visitas = visitaRepository.listarPorInvitado(visitante.getId());
+
+        if (visitas.isEmpty()) {
+            throw new VisitaNoEncontradaException(
+                    "No hay ninguna visita registrada para el documento: " + documentoVisitante);
+        }
+
+        Visita visitaMasReciente = visitas.get(0);
+
+        Persona personaVisitada = personaRepository.buscarPorId(visitaMasReciente.getPersonaVisitadaId())
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe la persona visitada con id: " + visitaMasReciente.getPersonaVisitadaId()));
+
+        return new DetalleVisitaConsulta(
+                visitante.getNombre(),
+                visitante.getDocumento(),
+                visitante.getFotoUrl(),
+                personaVisitada.getNombre(),
+                visitaMasReciente.getEstado()
+        );
     }
 
     private void validarDatosObligatorios(Long invitadoId, Long personaVisitadaId, LocalDateTime fechaHoraVisita) {
