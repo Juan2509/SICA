@@ -59,4 +59,39 @@ public class PersonaRepositoryJdbcAdapter implements PersonaRepositoryPort {
             throw new RuntimeException("Error al verificar si la persona existe.", e);
         }
     }
+
+    @Override
+    public boolean existePorId(Long id) {
+        String sql = "SELECT 1 FROM personas WHERE id = ?";
+
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+
+            statement.setLong(1, id);
+
+            try (ResultSet resultado = statement.executeQuery()) {
+                return resultado.next();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al verificar si la persona existe.", e);
+        }
+    }
+
+    @Override
+    public void asociarEmpresa(Long personaId, Long empresaId) {
+        String sql = "UPDATE personas SET empresa_id = ? WHERE id = ?";
+
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+
+            statement.setLong(1, empresaId);
+            statement.setLong(2, personaId);
+
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al asociar la empresa a la persona.", e);
+        }
+    }
 }

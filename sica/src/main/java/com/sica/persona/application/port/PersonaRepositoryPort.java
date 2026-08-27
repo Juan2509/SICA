@@ -11,4 +11,8 @@ public interface PersonaRepositoryPort {
     Persona guardar(Persona persona);
 
     boolean existePorDocumento(String documento);
+
+    boolean existePorId(Long id);
+
+    void asociarEmpresa(Long personaId, Long empresaId);
 }
