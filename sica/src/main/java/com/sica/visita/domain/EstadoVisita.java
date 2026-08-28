@@ -7,6 +7,7 @@ package com.sica.visita.domain;
  */
 public enum EstadoVisita {
     APROBADO,
+    RECHAZADO,
     PENDIENTE_APROBACION,
     PENDIENTE_APROBACION_POR_OLVIDO,
     DENTRO,

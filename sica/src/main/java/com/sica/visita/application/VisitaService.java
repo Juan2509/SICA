@@ -4,9 +4,11 @@ import com.sica.autorizacion.application.AutorizacionService;
 import com.sica.persona.application.exception.PersonaNoEncontradaException;
 import com.sica.persona.application.port.PersonaRepositoryPort;
 import com.sica.persona.domain.Persona;
+import com.sica.persona.domain.TipoPersona;
 import com.sica.usuario.application.port.BitacoraAuditoriaPort;
 import com.sica.visita.application.dto.DetalleVisitaConsulta;
 import com.sica.visita.application.dto.PersonaDentroInfo;
+import com.sica.visita.application.dto.SolicitudAprobacionInfo;
 import com.sica.visita.application.exception.AccesoNoAutorizadoException;
 import com.sica.visita.application.exception.VisitaInvalidaException;
 import com.sica.visita.application.exception.VisitaNoEncontradaException;
@@ -27,6 +29,8 @@ public class VisitaService {
     private static final String PERMISO_CONSULTAR_VISITA = "consultar_visita";
     private static final String PERMISO_REGISTRAR_CHECKIN = "registrar_checkin";
     private static final String PERMISO_REGISTRAR_CHECKOUT = "registrar_checkout";
+    private static final String PERMISO_REGISTRAR_VISITANTE_NO_ANUNCIADO = "registrar_visitante_no_anunciado";
+    private static final String PERMISO_RESPONDER_SOLICITUD_VISITA = "responder_solicitud_visita";
 
     private final VisitaRepositoryPort visitaRepository;
     private final PersonaRepositoryPort personaRepository;
@@ -225,6 +229,142 @@ public class VisitaService {
                     );
                 })
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Registra un invitado que llego sin una visita programada (E5-HU01).
+     * Si la persona ya existe, se usa su registro. La nueva visita queda
+     * pendiente hasta que el funcionario la apruebe o rechace.
+     */
+    public Visita registrarVisitanteNoAnunciado(String nombre, String documento, String fotoUrl,
+                                                 Long personaVisitadaId, String usuarioResponsable) {
+        autorizacionService.verificarPermiso(
+                usuarioResponsable, PERMISO_REGISTRAR_VISITANTE_NO_ANUNCIADO);
+
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new VisitaInvalidaException("El nombre del visitante es obligatorio.");
+        }
+        if (documento == null || documento.trim().isEmpty()) {
+            throw new VisitaInvalidaException("El documento del visitante es obligatorio.");
+        }
+        if (personaVisitadaId == null || !personaRepository.existePorId(personaVisitadaId)) {
+            throw new PersonaNoEncontradaException(
+                    "No existe la persona que recibira la visita con id: " + personaVisitadaId);
+        }
+
+        Persona visitante = personaRepository.buscarPorDocumento(documento).orElse(null);
+
+        if (visitante == null) {
+            visitante = new Persona(nombre, documento, TipoPersona.INVITADO);
+            visitante.setFotoUrl(fotoUrl);
+            visitante = personaRepository.guardar(visitante);
+        }
+
+        Visita solicitud = new Visita(
+                visitante.getId(),
+                personaVisitadaId,
+                LocalDateTime.now(),
+                EstadoVisita.PENDIENTE_APROBACION
+        );
+        Visita visitaGuardada = visitaRepository.guardar(solicitud);
+
+        bitacoraAuditoria.registrar(
+                "SOLICITAR_VISITA_NO_ANUNCIADA",
+                "Se creo la solicitud de visita " + visitaGuardada.getId()
+                        + " para el documento: " + documento,
+                usuarioResponsable
+        );
+
+        return visitaGuardada;
+    }
+
+    /**
+     * Consulta las solicitudes pendientes dirigidas a un funcionario.
+     */
+    public List<SolicitudAprobacionInfo> consultarSolicitudesPendientes(
+            Long personaVisitadaId, String usuarioResponsable) {
+        autorizacionService.verificarPermiso(
+                usuarioResponsable, PERMISO_RESPONDER_SOLICITUD_VISITA);
+
+        if (!personaRepository.existePorId(personaVisitadaId)) {
+            throw new PersonaNoEncontradaException(
+                    "No existe la persona visitada con id: " + personaVisitadaId);
+        }
+
+        Persona personaVisitada = personaRepository.buscarPorId(personaVisitadaId)
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe la persona visitada con id: " + personaVisitadaId));
+        autorizacionService.verificarUsuarioCorrespondeAPersona(
+                usuarioResponsable, personaVisitada.getDocumento());
+
+        return visitaRepository.listarPendientesPorPersonaVisitada(personaVisitadaId).stream()
+                .map(visita -> {
+                    Persona visitante = personaRepository.buscarPorId(visita.getInvitadoId())
+                            .orElseThrow(() -> new PersonaNoEncontradaException(
+                                    "No existe el visitante con id: " + visita.getInvitadoId()));
+
+                    return new SolicitudAprobacionInfo(
+                            visita.getId(),
+                            visitante.getNombre(),
+                            visitante.getDocumento(),
+                            visitante.getFotoUrl(),
+                            visita.getFechaHoraVisita(),
+                            visita.getEstado()
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    public Visita aprobarSolicitud(Long visitaId, String usuarioResponsable) {
+        return responderSolicitud(visitaId, EstadoVisita.APROBADO, usuarioResponsable);
+    }
+
+    public Visita rechazarSolicitud(Long visitaId, String usuarioResponsable) {
+        return responderSolicitud(visitaId, EstadoVisita.RECHAZADO, usuarioResponsable);
+    }
+
+    /**
+     * Permite al guarda consultar el estado actualizado de la solicitud.
+     */
+    public EstadoVisita consultarEstadoSolicitud(Long visitaId, String usuarioResponsable) {
+        autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_CONSULTAR_VISITA);
+
+        return visitaRepository.buscarPorId(visitaId)
+                .orElseThrow(() -> new VisitaNoEncontradaException(
+                        "No existe una visita con id: " + visitaId))
+                .getEstado();
+    }
+
+    private Visita responderSolicitud(Long visitaId, EstadoVisita nuevoEstado,
+                                       String usuarioResponsable) {
+        autorizacionService.verificarPermiso(
+                usuarioResponsable, PERMISO_RESPONDER_SOLICITUD_VISITA);
+
+        Visita visita = visitaRepository.buscarPorId(visitaId)
+                .orElseThrow(() -> new VisitaNoEncontradaException(
+                        "No existe una visita con id: " + visitaId));
+
+        Persona personaVisitada = personaRepository.buscarPorId(visita.getPersonaVisitadaId())
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe la persona visitada con id: " + visita.getPersonaVisitadaId()));
+        autorizacionService.verificarUsuarioCorrespondeAPersona(
+                usuarioResponsable, personaVisitada.getDocumento());
+
+        if (visita.getEstado() != EstadoVisita.PENDIENTE_APROBACION) {
+            throw new VisitaInvalidaException(
+                    "La visita no esta pendiente de aprobacion. Estado actual: " + visita.getEstado());
+        }
+
+        visitaRepository.actualizarEstado(visitaId, nuevoEstado);
+        visita.setEstado(nuevoEstado);
+
+        bitacoraAuditoria.registrar(
+                nuevoEstado == EstadoVisita.APROBADO ? "APROBAR_SOLICITUD_VISITA" : "RECHAZAR_SOLICITUD_VISITA",
+                "La solicitud de visita " + visitaId + " cambio al estado " + nuevoEstado,
+                usuarioResponsable
+        );
+
+        return visita;
     }
 
     private void validarDatosObligatorios(Long invitadoId, Long personaVisitadaId, LocalDateTime fechaHoraVisita) {

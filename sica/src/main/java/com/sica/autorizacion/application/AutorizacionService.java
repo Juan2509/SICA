@@ -50,4 +50,19 @@ public class AutorizacionService {
             );
         }
     }
+
+    /**
+     * Verifica que el usuario corresponda a la persona visitada.
+     * Ambos registros se relacionan mediante su numero de documento.
+     */
+    public void verificarUsuarioCorrespondeAPersona(String username, String documentoPersona) {
+        Usuario usuario = usuarioRepository.buscarPorUsername(username)
+                .orElseThrow(() -> new AccesoDenegadoException(
+                        "Acceso denegado: no existe el usuario '" + username + "'."));
+
+        if (!usuario.getDocumento().equals(documentoPersona)) {
+            throw new AccesoDenegadoException(
+                    "Acceso denegado: la solicitud no corresponde al funcionario '" + username + "'.");
+        }
+    }
 }

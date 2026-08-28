@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Adaptador de salida (hexagonal): implementa VisitaRepositoryPort
@@ -72,6 +73,71 @@ public class VisitaRepositoryJdbcAdapter implements VisitaRepositoryPort {
 
         } catch (SQLException e) {
             throw new RuntimeException("Error al consultar las visitas del invitado.", e);
+        }
+    }
+
+    @Override
+    public Optional<Visita> buscarPorId(Long visitaId) {
+        String sql = "SELECT id, invitado_id, persona_visitada_id, fecha_hora_visita, estado, "
+                + "fecha_hora_checkin, usuario_checkin, fecha_hora_checkout, usuario_checkout "
+                + "FROM visitas WHERE id = ?";
+
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+
+            statement.setLong(1, visitaId);
+
+            try (ResultSet resultado = statement.executeQuery()) {
+                if (resultado.next()) {
+                    return Optional.of(mapearVisita(resultado));
+                }
+                return Optional.empty();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar la visita por id.", e);
+        }
+    }
+
+    @Override
+    public List<Visita> listarPendientesPorPersonaVisitada(Long personaVisitadaId) {
+        String sql = "SELECT id, invitado_id, persona_visitada_id, fecha_hora_visita, estado, "
+                + "fecha_hora_checkin, usuario_checkin, fecha_hora_checkout, usuario_checkout "
+                + "FROM visitas WHERE persona_visitada_id = ? AND estado = ? ORDER BY fecha_hora_visita";
+
+        List<Visita> visitas = new ArrayList<>();
+
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+
+            statement.setLong(1, personaVisitadaId);
+            statement.setString(2, EstadoVisita.PENDIENTE_APROBACION.name());
+
+            try (ResultSet resultado = statement.executeQuery()) {
+                while (resultado.next()) {
+                    visitas.add(mapearVisita(resultado));
+                }
+            }
+            return visitas;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al consultar las solicitudes pendientes.", e);
+        }
+    }
+
+    @Override
+    public void actualizarEstado(Long visitaId, EstadoVisita estado) {
+        String sql = "UPDATE visitas SET estado = ? WHERE id = ?";
+
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+
+            statement.setString(1, estado.name());
+            statement.setLong(2, visitaId);
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar el estado de la visita.", e);
         }
     }
 
