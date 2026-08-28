@@ -181,6 +181,25 @@ public class VisitaRepositoryJdbcAdapter implements VisitaRepositoryPort {
     }
 
     @Override
+    public void cerrarPorSistema(Long visitaId, LocalDateTime fechaHoraCierre) {
+        String sql = "UPDATE visitas SET estado = ?, fecha_hora_checkout = ?, usuario_checkout = ? WHERE id = ?";
+
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+
+            statement.setString(1, EstadoVisita.CERRADA_POR_SISTEMA.name());
+            statement.setTimestamp(2, Timestamp.valueOf(fechaHoraCierre));
+            statement.setString(3, "SISTEMA");
+            statement.setLong(4, visitaId);
+
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al cerrar la visita anterior por salida olvidada.", e);
+        }
+    }
+
+    @Override
     public List<Visita> listarPorEstado(EstadoVisita estado) {
         String sql = "SELECT id, invitado_id, persona_visitada_id, fecha_hora_visita, estado, "
                 + "fecha_hora_checkin, usuario_checkin, fecha_hora_checkout, usuario_checkout "

@@ -146,7 +146,45 @@ public class VisitaService {
                     "No hay ninguna visita registrada para el documento: " + documentoVisitante);
         }
 
-        Visita visitaMasReciente = visitas.get(0);
+        Visita visitaAnteriorAbierta = visitas.stream()
+                .filter(visita -> visita.getEstado() == EstadoVisita.DENTRO)
+                .findFirst()
+                .orElse(null);
+
+        Visita visitaMasReciente;
+
+        if (visitaAnteriorAbierta != null) {
+            LocalDateTime fechaRegularizacion = LocalDateTime.now();
+            visitaRepository.cerrarPorSistema(visitaAnteriorAbierta.getId(), fechaRegularizacion);
+
+            visitaAnteriorAbierta.setEstado(EstadoVisita.CERRADA_POR_SISTEMA);
+            visitaAnteriorAbierta.setFechaHoraCheckOut(fechaRegularizacion);
+            visitaAnteriorAbierta.setUsuarioCheckOut("SISTEMA");
+
+            bitacoraAuditoria.registrar(
+                    "REGULARIZAR_SALIDA_OLVIDADA",
+                    "El sistema cerro la visita " + visitaAnteriorAbierta.getId()
+                            + " del documento " + documentoVisitante + " por salida olvidada",
+                    usuarioResponsable
+            );
+
+            visitaMasReciente = visitas.stream()
+                    .filter(visita -> visita.getEstado() == EstadoVisita.APROBADO)
+                    .findFirst()
+                    .orElse(null);
+
+            if (visitaMasReciente == null) {
+                Visita nuevaVisita = new Visita(
+                        visitante.getId(),
+                        visitaAnteriorAbierta.getPersonaVisitadaId(),
+                        fechaRegularizacion,
+                        EstadoVisita.APROBADO
+                );
+                visitaMasReciente = visitaRepository.guardar(nuevaVisita);
+            }
+        } else {
+            visitaMasReciente = visitas.get(0);
+        }
 
         if (visitaMasReciente.getEstado() != EstadoVisita.APROBADO) {
             throw new AccesoNoAutorizadoException(

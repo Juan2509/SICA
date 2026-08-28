@@ -27,5 +27,7 @@ public interface VisitaRepositoryPort {
 
     void registrarCheckOut(Long visitaId, LocalDateTime fechaHoraCheckOut, String usuarioCheckOut);
 
+    void cerrarPorSistema(Long visitaId, LocalDateTime fechaHoraCierre);
+
     List<Visita> listarPorEstado(EstadoVisita estado);
 }
