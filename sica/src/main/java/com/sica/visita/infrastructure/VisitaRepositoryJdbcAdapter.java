@@ -103,7 +103,7 @@ public class VisitaRepositoryJdbcAdapter implements VisitaRepositoryPort {
     public List<Visita> listarPendientesPorPersonaVisitada(Long personaVisitadaId) {
         String sql = "SELECT id, invitado_id, persona_visitada_id, fecha_hora_visita, estado, "
                 + "fecha_hora_checkin, usuario_checkin, fecha_hora_checkout, usuario_checkout "
-                + "FROM visitas WHERE persona_visitada_id = ? AND estado = ? ORDER BY fecha_hora_visita";
+                + "FROM visitas WHERE persona_visitada_id = ? AND estado IN (?, ?) ORDER BY fecha_hora_visita";
 
         List<Visita> visitas = new ArrayList<>();
 
@@ -112,6 +112,7 @@ public class VisitaRepositoryJdbcAdapter implements VisitaRepositoryPort {
 
             statement.setLong(1, personaVisitadaId);
             statement.setString(2, EstadoVisita.PENDIENTE_APROBACION.name());
+            statement.setString(3, EstadoVisita.PENDIENTE_APROBACION_POR_OLVIDO.name());
 
             try (ResultSet resultado = statement.executeQuery()) {
                 while (resultado.next()) {

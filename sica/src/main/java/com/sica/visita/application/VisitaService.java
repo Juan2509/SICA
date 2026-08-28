@@ -30,6 +30,7 @@ public class VisitaService {
     private static final String PERMISO_REGISTRAR_CHECKIN = "registrar_checkin";
     private static final String PERMISO_REGISTRAR_CHECKOUT = "registrar_checkout";
     private static final String PERMISO_REGISTRAR_VISITANTE_NO_ANUNCIADO = "registrar_visitante_no_anunciado";
+    private static final String PERMISO_SOLICITAR_INGRESO_POR_OLVIDO = "solicitar_ingreso_por_olvido";
     private static final String PERMISO_RESPONDER_SOLICITUD_VISITA = "responder_solicitud_visita";
 
     private final VisitaRepositoryPort visitaRepository;
@@ -279,6 +280,52 @@ public class VisitaService {
     }
 
     /**
+     * Solicita un ingreso excepcional para un trabajador que olvido su carnet (E5-HU02).
+     * El trabajador se localiza por documento y la solicitud queda pendiente
+     * hasta que el funcionario correspondiente la responda.
+     */
+    public Visita solicitarIngresoPorOlvido(String documentoTrabajador, Long funcionarioId,
+                                             String usuarioResponsable) {
+        autorizacionService.verificarPermiso(
+                usuarioResponsable, PERMISO_SOLICITAR_INGRESO_POR_OLVIDO);
+
+        if (documentoTrabajador == null || documentoTrabajador.trim().isEmpty()) {
+            throw new VisitaInvalidaException("El documento del trabajador es obligatorio.");
+        }
+
+        Persona trabajador = personaRepository.buscarPorDocumento(documentoTrabajador)
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe un trabajador con el documento: " + documentoTrabajador));
+
+        if (trabajador.getTipo() != TipoPersona.TRABAJADOR) {
+            throw new VisitaInvalidaException(
+                    "La persona encontrada no esta registrada como trabajador.");
+        }
+
+        if (funcionarioId == null || !personaRepository.existePorId(funcionarioId)) {
+            throw new PersonaNoEncontradaException(
+                    "No existe el funcionario que recibira la solicitud con id: " + funcionarioId);
+        }
+
+        Visita solicitud = new Visita(
+                trabajador.getId(),
+                funcionarioId,
+                LocalDateTime.now(),
+                EstadoVisita.PENDIENTE_APROBACION_POR_OLVIDO
+        );
+        Visita visitaGuardada = visitaRepository.guardar(solicitud);
+
+        bitacoraAuditoria.registrar(
+                "SOLICITAR_INGRESO_POR_OLVIDO",
+                "Se creo la solicitud de ingreso por olvido " + visitaGuardada.getId()
+                        + " para el trabajador con documento: " + documentoTrabajador,
+                usuarioResponsable
+        );
+
+        return visitaGuardada;
+    }
+
+    /**
      * Consulta las solicitudes pendientes dirigidas a un funcionario.
      */
     public List<SolicitudAprobacionInfo> consultarSolicitudesPendientes(
@@ -350,7 +397,8 @@ public class VisitaService {
         autorizacionService.verificarUsuarioCorrespondeAPersona(
                 usuarioResponsable, personaVisitada.getDocumento());
 
-        if (visita.getEstado() != EstadoVisita.PENDIENTE_APROBACION) {
+        if (visita.getEstado() != EstadoVisita.PENDIENTE_APROBACION
+                && visita.getEstado() != EstadoVisita.PENDIENTE_APROBACION_POR_OLVIDO) {
             throw new VisitaInvalidaException(
                     "La visita no esta pendiente de aprobacion. Estado actual: " + visita.getEstado());
         }
