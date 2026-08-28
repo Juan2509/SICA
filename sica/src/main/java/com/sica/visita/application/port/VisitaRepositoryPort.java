@@ -1,9 +1,10 @@
 package com.sica.visita.application.port;
 
+import com.sica.visita.domain.EstadoVisita;
+import com.sica.visita.domain.Visita;
+
 import java.time.LocalDateTime;
 import java.util.List;
-
-import com.sica.visita.domain.Visita;
 
 /**
  * Puerto de salida (hexagonal): define lo que la capa de aplicacion
@@ -16,4 +17,8 @@ public interface VisitaRepositoryPort {
     List<Visita> listarPorInvitado(Long invitadoId);
 
     void registrarCheckIn(Long visitaId, LocalDateTime fechaHoraCheckIn, String usuarioCheckIn);
+
+    void registrarCheckOut(Long visitaId, LocalDateTime fechaHoraCheckOut, String usuarioCheckOut);
+
+    List<Visita> listarPorEstado(EstadoVisita estado);
 }

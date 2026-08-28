@@ -6,6 +6,7 @@ import com.sica.persona.application.port.PersonaRepositoryPort;
 import com.sica.persona.domain.Persona;
 import com.sica.usuario.application.port.BitacoraAuditoriaPort;
 import com.sica.visita.application.dto.DetalleVisitaConsulta;
+import com.sica.visita.application.dto.PersonaDentroInfo;
 import com.sica.visita.application.exception.AccesoNoAutorizadoException;
 import com.sica.visita.application.exception.VisitaInvalidaException;
 import com.sica.visita.application.exception.VisitaNoEncontradaException;
@@ -15,6 +16,7 @@ import com.sica.visita.domain.Visita;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Servicio de aplicacion para la Historia de Usuario E3-HU01 (Pre-registrar invitado).
@@ -24,6 +26,7 @@ public class VisitaService {
     private static final String PERMISO_REGISTRAR_VISITA = "registrar_visita";
     private static final String PERMISO_CONSULTAR_VISITA = "consultar_visita";
     private static final String PERMISO_REGISTRAR_CHECKIN = "registrar_checkin";
+    private static final String PERMISO_REGISTRAR_CHECKOUT = "registrar_checkout";
 
     private final VisitaRepositoryPort visitaRepository;
     private final PersonaRepositoryPort personaRepository;
@@ -159,6 +162,69 @@ public class VisitaService {
         );
 
         return visitaMasReciente;
+    }
+
+    /**
+     * Registra el check-out (salida) de una persona, a partir de su documento (E4-HU02).
+     * Localiza la visita activa (en estado DENTRO) y la cierra.
+     *
+     * @param documentoVisitante  documento de la persona que va a salir
+     * @param usuarioResponsable  username del guarda que realiza el check-out (se valida su permiso y queda en la bitacora)
+     */
+    public Visita registrarCheckOut(String documentoVisitante, String usuarioResponsable) {
+        autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_REGISTRAR_CHECKOUT);
+
+        Persona visitante = personaRepository.buscarPorDocumento(documentoVisitante)
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe ninguna persona registrada con el documento: " + documentoVisitante));
+
+        List<Visita> visitas = visitaRepository.listarPorInvitado(visitante.getId());
+
+        Visita visitaActiva = visitas.stream()
+                .filter(visita -> visita.getEstado() == EstadoVisita.DENTRO)
+                .findFirst()
+                .orElseThrow(() -> new VisitaNoEncontradaException(
+                        "No hay una visita activa (Dentro) para el documento: " + documentoVisitante));
+
+        LocalDateTime ahora = LocalDateTime.now();
+        visitaRepository.registrarCheckOut(visitaActiva.getId(), ahora, usuarioResponsable);
+
+        visitaActiva.setEstado(EstadoVisita.FINALIZADA);
+        visitaActiva.setFechaHoraCheckOut(ahora);
+        visitaActiva.setUsuarioCheckOut(usuarioResponsable);
+
+        bitacoraAuditoria.registrar(
+                "REGISTRAR_CHECKOUT",
+                "Se registro el check-out de " + visitante.getNombre() + " (documento: " + documentoVisitante + ")",
+                usuarioResponsable
+        );
+
+        return visitaActiva;
+    }
+
+    /**
+     * Devuelve las personas que actualmente estan dentro del complejo (E4-HU03),
+     * es decir, cuya visita esta en estado DENTRO. Las visitas cerradas
+     * (FINALIZADA o CERRADA_POR_SISTEMA) nunca aparecen aqui.
+     */
+    public List<PersonaDentroInfo> consultarPersonasDentro(String usuarioResponsable) {
+        autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_CONSULTAR_VISITA);
+
+        List<Visita> visitasActivas = visitaRepository.listarPorEstado(EstadoVisita.DENTRO);
+
+        return visitasActivas.stream()
+                .map(visita -> {
+                    Persona persona = personaRepository.buscarPorId(visita.getInvitadoId())
+                            .orElseThrow(() -> new PersonaNoEncontradaException(
+                                    "No existe la persona con id: " + visita.getInvitadoId()));
+                    return new PersonaDentroInfo(
+                            persona.getNombre(),
+                            persona.getDocumento(),
+                            persona.getTipo(),
+                            visita.getFechaHoraCheckIn()
+                    );
+                })
+                .collect(Collectors.toList());
     }
 
     private void validarDatosObligatorios(Long invitadoId, Long personaVisitadaId, LocalDateTime fechaHoraVisita) {
