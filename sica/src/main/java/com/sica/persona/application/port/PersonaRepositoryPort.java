@@ -3,6 +3,7 @@ package com.sica.persona.application.port;
 import java.util.Optional;
 
 import com.sica.persona.domain.Persona;
+import com.sica.persona.domain.EstadoAcceso;
 
 /**
  * Puerto de salida (hexagonal): define lo que la capa de aplicacion
@@ -17,6 +18,8 @@ public interface PersonaRepositoryPort {
     boolean existePorId(Long id);
 
     void asociarEmpresa(Long personaId, Long empresaId);
+
+    void actualizarEstadoAcceso(Long personaId, EstadoAcceso estadoAcceso);
 
     Optional<Persona> buscarPorDocumento(String documento);
 

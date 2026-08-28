@@ -10,6 +10,7 @@ import com.sica.persona.application.exception.PersonaInvalidaException;
 import com.sica.persona.application.exception.PersonaNoEncontradaException;
 import com.sica.persona.application.port.PersonaRepositoryPort;
 import com.sica.persona.domain.Persona;
+import com.sica.persona.domain.EstadoAcceso;
 import com.sica.persona.domain.TipoPersona;
 import com.sica.usuario.application.port.BitacoraAuditoriaPort;
 
@@ -22,6 +23,7 @@ public class PersonaService {
     private static final String PERMISO_REGISTRAR_PERSONA = "registrar_persona";
     private static final String PERMISO_GESTIONAR_EMPRESAS = "gestionar_empresas";
     private static final String PERMISO_CONSULTAR_PERSONA = "consultar_persona";
+    private static final String PERMISO_CAMBIAR_ESTADO_ACCESO = "bloquear_persona";
 
     private final PersonaRepositoryPort personaRepository;
     private final EmpresaRepositoryPort empresaRepository;
@@ -103,6 +105,38 @@ public class PersonaService {
         return personaEncontrada.orElseThrow(() ->
                 new PersonaNoEncontradaException("No existe ninguna persona registrada con el documento: " + documento)
         );
+    }
+
+    /**
+     * Restringe o habilita el acceso de una persona identificada por documento (E7-HU02).
+     */
+    public Persona cambiarEstadoAcceso(String documento, EstadoAcceso nuevoEstado,
+                                        String usuarioResponsable) {
+        autorizacionService.verificarPermiso(
+                usuarioResponsable, PERMISO_CAMBIAR_ESTADO_ACCESO);
+
+        if (documento == null || documento.trim().isEmpty()) {
+            throw new PersonaInvalidaException("El documento de la persona es obligatorio.");
+        }
+        if (nuevoEstado == null) {
+            throw new PersonaInvalidaException("El nuevo estado de acceso es obligatorio.");
+        }
+
+        Persona persona = personaRepository.buscarPorDocumento(documento)
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe ninguna persona registrada con el documento: " + documento));
+
+        personaRepository.actualizarEstadoAcceso(persona.getId(), nuevoEstado);
+        persona.setEstadoAcceso(nuevoEstado);
+
+        bitacoraAuditoria.registrar(
+                "CAMBIAR_ESTADO_ACCESO",
+                "El estado de acceso de la persona con documento " + documento
+                        + " cambio a " + nuevoEstado,
+                usuarioResponsable
+        );
+
+        return persona;
     }
 
     private void validarDatosObligatorios(String nombre, String documento, TipoPersona tipo) {

@@ -14,11 +14,13 @@ public class Persona {
     private TipoPersona tipo;
     private Long empresaId;
     private String fotoUrl;
+    private EstadoAcceso estadoAcceso;
 
     public Persona(String nombre, String documento, TipoPersona tipo) {
         this.nombre = nombre;
         this.documento = documento;
         this.tipo = tipo;
+        this.estadoAcceso = EstadoAcceso.HABILITADO;
     }
 
     public Long getId() {
@@ -55,5 +57,13 @@ public class Persona {
 
     public void setFotoUrl(String fotoUrl) {
         this.fotoUrl = fotoUrl;
+    }
+
+    public EstadoAcceso getEstadoAcceso() {
+        return estadoAcceso;
+    }
+
+    public void setEstadoAcceso(EstadoAcceso estadoAcceso) {
+        this.estadoAcceso = estadoAcceso;
     }
 }

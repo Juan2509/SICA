@@ -4,6 +4,7 @@ import com.sica.autorizacion.application.AutorizacionService;
 import com.sica.persona.application.exception.PersonaNoEncontradaException;
 import com.sica.persona.application.port.PersonaRepositoryPort;
 import com.sica.persona.domain.Persona;
+import com.sica.persona.domain.EstadoAcceso;
 import com.sica.persona.domain.TipoPersona;
 import com.sica.usuario.application.port.BitacoraAuditoriaPort;
 import com.sica.visita.application.dto.DetalleVisitaConsulta;
@@ -138,6 +139,11 @@ public class VisitaService {
         Persona visitante = personaRepository.buscarPorDocumento(documentoVisitante)
                 .orElseThrow(() -> new PersonaNoEncontradaException(
                         "No existe ninguna persona registrada con el documento: " + documentoVisitante));
+
+        if (visitante.getEstadoAcceso() == EstadoAcceso.RESTRINGIDO) {
+            throw new AccesoNoAutorizadoException(
+                    "El ingreso no esta autorizado porque la persona tiene el acceso restringido.");
+        }
 
         List<Visita> visitas = visitaRepository.listarPorInvitado(visitante.getId());
 

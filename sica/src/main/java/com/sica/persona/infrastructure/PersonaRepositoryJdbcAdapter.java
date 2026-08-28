@@ -10,6 +10,7 @@ import java.util.Optional;
 import com.sica.infraestructura.ConexionBD;
 import com.sica.persona.application.port.PersonaRepositoryPort;
 import com.sica.persona.domain.Persona;
+import com.sica.persona.domain.EstadoAcceso;
 import com.sica.persona.domain.TipoPersona;
 
 /**
@@ -99,8 +100,25 @@ public class PersonaRepositoryJdbcAdapter implements PersonaRepositoryPort {
     }
 
     @Override
+    public void actualizarEstadoAcceso(Long personaId, EstadoAcceso estadoAcceso) {
+        String sql = "UPDATE personas SET estado_acceso = ? WHERE id = ?";
+
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+
+            statement.setString(1, estadoAcceso.name());
+            statement.setLong(2, personaId);
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar el estado de acceso de la persona.", e);
+        }
+    }
+
+    @Override
     public Optional<Persona> buscarPorDocumento(String documento) {
-        String sql = "SELECT id, nombre, documento, tipo, empresa_id, foto_url FROM personas WHERE documento = ?";
+        String sql = "SELECT id, nombre, documento, tipo, empresa_id, foto_url, estado_acceso "
+                + "FROM personas WHERE documento = ?";
 
         try (Connection conexion = ConexionBD.obtenerConexion();
              PreparedStatement statement = conexion.prepareStatement(sql)) {
@@ -121,7 +139,8 @@ public class PersonaRepositoryJdbcAdapter implements PersonaRepositoryPort {
 
     @Override
     public Optional<Persona> buscarPorId(Long id) {
-        String sql = "SELECT id, nombre, documento, tipo, empresa_id, foto_url FROM personas WHERE id = ?";
+        String sql = "SELECT id, nombre, documento, tipo, empresa_id, foto_url, estado_acceso "
+                + "FROM personas WHERE id = ?";
 
         try (Connection conexion = ConexionBD.obtenerConexion();
              PreparedStatement statement = conexion.prepareStatement(sql)) {
@@ -149,6 +168,7 @@ public class PersonaRepositoryJdbcAdapter implements PersonaRepositoryPort {
         persona.setId(resultado.getLong("id"));
         persona.setEmpresaId(resultado.getObject("empresa_id", Long.class));
         persona.setFotoUrl(resultado.getString("foto_url"));
+        persona.setEstadoAcceso(EstadoAcceso.valueOf(resultado.getString("estado_acceso")));
         return persona;
     }
 }
