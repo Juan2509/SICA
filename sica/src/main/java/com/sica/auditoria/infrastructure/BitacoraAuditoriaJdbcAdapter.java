@@ -16,21 +16,47 @@ public class BitacoraAuditoriaJdbcAdapter implements BitacoraAuditoriaPort {
 
     @Override
     public void registrar(String accion, String descripcion, String usuarioResponsable) {
-        String sql = "INSERT INTO bitacora_auditoria (accion, descripcion, usuario_responsable, fecha) "
-                + "VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO bitacora_auditoria "
+                + "(accion, entidad, descripcion, usuario_responsable, fecha, resultado) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conexion = ConexionBD.obtenerConexion();
              PreparedStatement statement = conexion.prepareStatement(sql)) {
 
             statement.setString(1, accion);
-            statement.setString(2, descripcion);
-            statement.setString(3, usuarioResponsable);
-            statement.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+            statement.setString(2, identificarEntidad(accion));
+            statement.setString(3, descripcion);
+            statement.setString(4, usuarioResponsable);
+            statement.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
+            statement.setString(6, accion.equals("LOGIN_FALLIDO") ? "FALLIDO" : "EXITOSO");
 
             statement.executeUpdate();
 
         } catch (SQLException e) {
             throw new RuntimeException("Error al registrar en la bitacora de auditoria.", e);
         }
+    }
+
+    private String identificarEntidad(String accion) {
+        if (accion.contains("USUARIO") || accion.contains("LOGIN")) {
+            return "USUARIO";
+        }
+        if (accion.contains("PERSONA") || accion.contains("ESTADO_ACCESO")) {
+            return "PERSONA";
+        }
+        if (accion.contains("EMPRESA")) {
+            return "EMPRESA";
+        }
+        if (accion.contains("INCIDENTE")) {
+            return "INCIDENTE";
+        }
+        if (accion.contains("VISITA") || accion.contains("CHECKIN")
+                || accion.contains("CHECKOUT") || accion.contains("SALIDA_OLVIDADA")) {
+            return "VISITA";
+        }
+        if (accion.contains("ROL")) {
+            return "ROL";
+        }
+        return "SISTEMA";
     }
 }

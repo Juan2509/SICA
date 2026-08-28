@@ -24,6 +24,8 @@ public class PersonaService {
     private static final String PERMISO_GESTIONAR_EMPRESAS = "gestionar_empresas";
     private static final String PERMISO_CONSULTAR_PERSONA = "consultar_persona";
     private static final String PERMISO_CAMBIAR_ESTADO_ACCESO = "bloquear_persona";
+    private static final String PERMISO_ACTUALIZAR_PERSONA = "actualizar_persona";
+    private static final String PERMISO_ELIMINAR_PERSONA = "eliminar_persona";
 
     private final PersonaRepositoryPort personaRepository;
     private final EmpresaRepositoryPort empresaRepository;
@@ -137,6 +139,51 @@ public class PersonaService {
         );
 
         return persona;
+    }
+
+    public Persona actualizarPersona(String documentoActual, String nombre, String nuevoDocumento,
+                                      TipoPersona tipo, String fotoUrl, String usuarioResponsable) {
+        autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_ACTUALIZAR_PERSONA);
+        validarDatosObligatorios(nombre, nuevoDocumento, tipo);
+
+        Persona personaActual = personaRepository.buscarPorDocumento(documentoActual)
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe ninguna persona registrada con el documento: " + documentoActual));
+
+        if (!documentoActual.equals(nuevoDocumento)
+                && personaRepository.existePorDocumento(nuevoDocumento)) {
+            throw new PersonaDuplicadaException(
+                    "Ya existe una persona registrada con el documento: " + nuevoDocumento);
+        }
+
+        Persona personaActualizada = new Persona(nombre, nuevoDocumento, tipo);
+        personaActualizada.setId(personaActual.getId());
+        personaActualizada.setFotoUrl(fotoUrl);
+        personaActualizada.setEmpresaId(personaActual.getEmpresaId());
+        personaActualizada.setEstadoAcceso(personaActual.getEstadoAcceso());
+        personaRepository.actualizar(personaActualizada);
+
+        bitacoraAuditoria.registrar(
+                "ACTUALIZAR_PERSONA",
+                "Se actualizo la persona con id: " + personaActual.getId(),
+                usuarioResponsable
+        );
+        return personaActualizada;
+    }
+
+    public void eliminarPersona(String documento, String usuarioResponsable) {
+        autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_ELIMINAR_PERSONA);
+
+        Persona persona = personaRepository.buscarPorDocumento(documento)
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe ninguna persona registrada con el documento: " + documento));
+
+        personaRepository.eliminar(persona.getId());
+        bitacoraAuditoria.registrar(
+                "ELIMINAR_PERSONA",
+                "Se elimino la persona con id: " + persona.getId() + " y documento: " + documento,
+                usuarioResponsable
+        );
     }
 
     private void validarDatosObligatorios(String nombre, String documento, TipoPersona tipo) {

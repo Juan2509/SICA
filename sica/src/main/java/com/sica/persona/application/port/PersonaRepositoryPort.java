@@ -13,6 +13,10 @@ public interface PersonaRepositoryPort {
 
     Persona guardar(Persona persona);
 
+    void actualizar(Persona persona);
+
+    void eliminar(Long id);
+
     boolean existePorDocumento(String documento);
 
     boolean existePorId(Long id);

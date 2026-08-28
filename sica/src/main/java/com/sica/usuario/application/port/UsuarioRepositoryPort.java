@@ -12,6 +12,12 @@ public interface UsuarioRepositoryPort {
 
     Usuario guardar(Usuario usuario);
 
+    void actualizar(Usuario usuario);
+
+    void eliminar(Long id);
+
+    boolean existePorId(Long id);
+
     boolean existePorUsername(String username);
 
     Optional<Usuario> buscarPorUsername(String username);

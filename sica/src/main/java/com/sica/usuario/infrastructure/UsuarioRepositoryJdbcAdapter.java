@@ -48,6 +48,51 @@ public class UsuarioRepositoryJdbcAdapter implements UsuarioRepositoryPort {
     }
 
     @Override
+    public void actualizar(Usuario usuario) {
+        String sql = "UPDATE usuarios SET nombre = ?, documento = ?, username = ?, "
+                + "password = ?, rol_id = ? WHERE id = ?";
+
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+            statement.setString(1, usuario.getNombre());
+            statement.setString(2, usuario.getDocumento());
+            statement.setString(3, usuario.getUsername());
+            statement.setString(4, usuario.getPassword());
+            statement.setLong(5, usuario.getRolId());
+            statement.setLong(6, usuario.getId());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar el usuario.", e);
+        }
+    }
+
+    @Override
+    public void eliminar(Long id) {
+        String sql = "DELETE FROM usuarios WHERE id = ?";
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+            statement.setLong(1, id);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al eliminar el usuario.", e);
+        }
+    }
+
+    @Override
+    public boolean existePorId(Long id) {
+        String sql = "SELECT 1 FROM usuarios WHERE id = ?";
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+            statement.setLong(1, id);
+            try (ResultSet resultado = statement.executeQuery()) {
+                return resultado.next();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al verificar si el usuario existe.", e);
+        }
+    }
+
+    @Override
     public boolean existePorUsername(String username) {
         String sql = "SELECT 1 FROM usuarios WHERE username = ?";
 

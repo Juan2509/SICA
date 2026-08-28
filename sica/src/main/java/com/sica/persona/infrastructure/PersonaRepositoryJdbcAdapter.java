@@ -100,6 +100,34 @@ public class PersonaRepositoryJdbcAdapter implements PersonaRepositoryPort {
     }
 
     @Override
+    public void actualizar(Persona persona) {
+        String sql = "UPDATE personas SET nombre = ?, documento = ?, tipo = ?, foto_url = ? WHERE id = ?";
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+            statement.setString(1, persona.getNombre());
+            statement.setString(2, persona.getDocumento());
+            statement.setString(3, persona.getTipo().name());
+            statement.setString(4, persona.getFotoUrl());
+            statement.setLong(5, persona.getId());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar la persona.", e);
+        }
+    }
+
+    @Override
+    public void eliminar(Long id) {
+        String sql = "DELETE FROM personas WHERE id = ?";
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql)) {
+            statement.setLong(1, id);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al eliminar la persona.", e);
+        }
+    }
+
+    @Override
     public void actualizarEstadoAcceso(Long personaId, EstadoAcceso estadoAcceso) {
         String sql = "UPDATE personas SET estado_acceso = ? WHERE id = ?";
 

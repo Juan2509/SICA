@@ -14,6 +14,8 @@ import com.sica.usuario.domain.Usuario;
 public class UsuarioService {
 
     private static final String PERMISO_CREAR_USUARIO = "crear_usuario";
+    private static final String PERMISO_ACTUALIZAR_USUARIO = "actualizar_usuario";
+    private static final String PERMISO_ELIMINAR_USUARIO = "eliminar_usuario";
 
     private final UsuarioRepositoryPort usuarioRepository;
     private final BitacoraAuditoriaPort bitacoraAuditoria;
@@ -58,6 +60,49 @@ public class UsuarioService {
         );
 
         return usuarioGuardado;
+    }
+
+    public Usuario actualizarUsuario(String usernameActual, String nombre, String documento,
+                                      String nuevoUsername, String password, Long rolId,
+                                      String usuarioResponsable) {
+        autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_ACTUALIZAR_USUARIO);
+        validarDatosObligatorios(nombre, documento, nuevoUsername, password, rolId);
+
+        Usuario usuarioActual = usuarioRepository.buscarPorUsername(usernameActual)
+                .orElseThrow(() -> new UsuarioInvalidoException(
+                        "No existe un usuario con el username: " + usernameActual));
+
+        if (!usernameActual.equals(nuevoUsername)
+                && usuarioRepository.existePorUsername(nuevoUsername)) {
+            throw new UsuarioDuplicadoException(
+                    "Ya existe un usuario con el username: " + nuevoUsername);
+        }
+
+        Usuario usuarioActualizado = new Usuario(nombre, documento, nuevoUsername, password, rolId);
+        usuarioActualizado.setId(usuarioActual.getId());
+        usuarioRepository.actualizar(usuarioActualizado);
+
+        bitacoraAuditoria.registrar(
+                "ACTUALIZAR_USUARIO",
+                "Se actualizo el usuario con id: " + usuarioActual.getId(),
+                usuarioResponsable
+        );
+        return usuarioActualizado;
+    }
+
+    public void eliminarUsuario(String username, String usuarioResponsable) {
+        autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_ELIMINAR_USUARIO);
+
+        Usuario usuario = usuarioRepository.buscarPorUsername(username)
+                .orElseThrow(() -> new UsuarioInvalidoException(
+                        "No existe un usuario con el username: " + username));
+
+        usuarioRepository.eliminar(usuario.getId());
+        bitacoraAuditoria.registrar(
+                "ELIMINAR_USUARIO",
+                "Se elimino el usuario con id: " + usuario.getId() + " y username: " + username,
+                usuarioResponsable
+        );
     }
 
     private void validarDatosObligatorios(String nombre, String documento, String username,
