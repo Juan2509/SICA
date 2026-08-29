@@ -84,10 +84,8 @@ simular su utilización.
 
 ## Modelo entidad-relación
 
-El siguiente diagrama representa el modelo PostgreSQL definido en
-`schema_postgresql.sql`. En esta etapa se conserva `schema.sql` como esquema
-MySQL operativo; su reemplazo se realizará junto con la migración completa de
-los datos y adaptadores para no dejar tecnologías mezcladas.
+El siguiente diagrama representa el modelo PostgreSQL oficial definido en
+`schema.sql`.
 
 Para crear la base y toda su estructura desde cero con PostgreSQL se utiliza:
 
@@ -95,8 +93,8 @@ Para crear la base y toda su estructura desde cero con PostgreSQL se utiliza:
 psql -U postgres -f ddl_postgresql.sql
 ```
 
-`ddl_postgresql.sql` crea `sica_db`, se conecta y carga
-`schema_postgresql.sql`. El esquema es un script de reconstrucción: utiliza
+`ddl_postgresql.sql` crea `sica_db`, se conecta y carga `schema.sql`. El esquema
+es un script de reconstrucción: utiliza
 `DROP TABLE IF EXISTS` antes de crear las tablas, por lo que elimina los datos
 anteriores. No debe ejecutarse sobre una base que se quiera conservar.
 
@@ -352,15 +350,22 @@ private static final String USUARIO = "root";
 private static final String PASSWORD = "tu_contrasena";
 ```
 
-### Crear una instalación nueva
+### Crear la estructura PostgreSQL
 
-En MySQL Workbench se ejecutan, en este orden:
+Desde una terminal ubicada en la carpeta del proyecto se ejecuta:
 
-1. `schema.sql` para crear la base, tablas, relaciones y triggers.
-2. `data.sql` para cargar roles, permisos y datos de ejemplo.
+```bash
+psql -U postgres -f ddl_postgresql.sql
+```
 
-Estos scripts consolidados se usan sobre una instalación nueva. No deben
-ejecutarse repetidamente sobre una base que ya contiene los datos iniciales.
+El cargador crea `sica_db` y ejecuta el archivo obligatorio `schema.sql` para
+crear tablas, relaciones, restricciones, índices y triggers. Como `schema.sql`
+reconstruye la estructura, no debe ejecutarse sobre datos que se quieran
+conservar.
+
+La conexión Java mostrada arriba todavía corresponde a MySQL y se actualizará
+cuando se implemente el adaptador PostgreSQL. No se deben mezclar esos valores
+de conexión con los nuevos scripts PostgreSQL.
 
 ### Compilar
 

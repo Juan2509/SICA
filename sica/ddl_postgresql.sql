@@ -14,4 +14,4 @@ WHERE NOT EXISTS (
 \connect sica_db
 
 -- Carga la estructura completa usando una ruta relativa a este archivo.
-\ir schema_postgresql.sql
+\ir schema.sql
