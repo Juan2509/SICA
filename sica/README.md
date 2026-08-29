@@ -111,6 +111,30 @@ usuarios de prueba, empresas, personas y visitas para los flujos principales.
 También contiene ejemplos controlados de `INSERT`, `UPDATE`, `DELETE` y
 consultas `SELECT` de verificación.
 
+### Privilegios PostgreSQL (DCL)
+
+Después del DDL se configura la cuenta técnica de la aplicación con:
+
+```bash
+psql -U postgres -d sica_db -f dcl_postgresql.sql
+```
+
+El script solicita de forma segura una contraseña para `sica_app`; no se guarda
+ninguna contraseña PostgreSQL en el repositorio. Esta cuenta no es superusuario
+y no puede crear bases de datos, roles ni tablas. Puede consultar las tablas,
+modificar los datos operativos e insertar registros de auditoría, pero no puede
+actualizar ni eliminar la bitácora.
+
+Los niveles de autorización no se mezclan:
+
+- **RBAC de SICA:** las tablas `roles`, `permisos` y `rol_permiso` determinan
+  qué acciones funcionales puede realizar una persona dentro de la aplicación.
+- **DCL de PostgreSQL:** `sica_aplicacion` y `sica_app` determinan qué comandos
+  puede ejecutar técnicamente la conexión Java sobre la base de datos.
+
+La aplicación deberá conectarse con `sica_app`. La cuenta administrativa
+`postgres` se reserva para ejecutar scripts de instalación y mantenimiento.
+
 ```mermaid
 erDiagram
     ROLES {
