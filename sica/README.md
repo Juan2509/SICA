@@ -100,6 +100,17 @@ psql -U postgres -f ddl_postgresql.sql
 `DROP TABLE IF EXISTS` antes de crear las tablas, por lo que elimina los datos
 anteriores. No debe ejecutarse sobre una base que se quiera conservar.
 
+Después de crear la estructura, los datos iniciales PostgreSQL se cargan con:
+
+```bash
+psql -U postgres -d sica_db -f dml_postgresql.sql
+```
+
+El DML se ejecuta dentro de una transacción e incluye roles, permisos, RBAC,
+usuarios de prueba, empresas, personas y visitas para los flujos principales.
+También contiene ejemplos controlados de `INSERT`, `UPDATE`, `DELETE` y
+consultas `SELECT` de verificación.
+
 ```mermaid
 erDiagram
     ROLES {
