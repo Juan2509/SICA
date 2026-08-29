@@ -58,6 +58,30 @@ capacidad/
 Los servicios de aplicación dependen de interfaces y no conocen las consultas
 SQL. Los detalles de MySQL permanecen en los adaptadores de infraestructura.
 
+## Flujo de trabajo Git Flow
+
+El repositorio utiliza un flujo de ramas basado en Git Flow:
+
+- `main`: contiene versiones estables listas para entrega.
+- `develop`: integra el trabajo terminado de las diferentes funcionalidades.
+- `feature/*`: se crea desde `develop` para desarrollar una historia de usuario.
+- `release/*`: se crea desde `develop` para preparar una versión; al finalizar
+  se integra en `main` y `develop`.
+- `hotfix/*`: se crea desde `main` para corregir un problema urgente; al
+  finalizar se integra en `main` y `develop`.
+
+Flujo utilizado para una historia:
+
+```text
+develop
+└── feature/e10-hu04-patrones
+    └── merge hacia develop al terminar y verificar la historia
+```
+
+Las ramas `release/*` y `hotfix/*` solo deben crearse cuando exista una
+liberación o una corrección urgente real. No se mantienen ramas vacías para
+simular su utilización.
+
 ## Modelo entidad-relación
 
 El siguiente diagrama representa las tablas y relaciones definidas en
