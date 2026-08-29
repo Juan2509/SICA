@@ -98,16 +98,16 @@ es un script de reconstrucción: utiliza
 `DROP TABLE IF EXISTS` antes de crear las tablas, por lo que elimina los datos
 anteriores. No debe ejecutarse sobre una base que se quiera conservar.
 
-Después de crear la estructura, los datos iniciales PostgreSQL se cargan con:
+Después de crear la estructura, los datos iniciales oficiales se cargan con:
 
 ```bash
-psql -U postgres -d sica_db -f dml_postgresql.sql
+psql -U postgres -d sica_db -f data.sql
 ```
 
-El DML se ejecuta dentro de una transacción e incluye roles, permisos, RBAC,
-usuarios de prueba, empresas, personas y visitas para los flujos principales.
-También contiene ejemplos controlados de `INSERT`, `UPDATE`, `DELETE` y
-consultas `SELECT` de verificación.
+`data.sql` se ejecuta dentro de una transacción e incluye roles, permisos,
+RBAC, usuarios de prueba, empresas, personas, auditoría y visitas para los
+flujos principales. El archivo complementario `dml_postgresql.sql` conserva
+ejemplos controlados de `INSERT`, `UPDATE`, `DELETE` y consultas `SELECT`.
 
 ### Privilegios PostgreSQL (DCL)
 

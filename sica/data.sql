@@ -1,136 +1,131 @@
-USE sica_db;
+-- Datos iniciales oficiales de SICA para PostgreSQL
+-- Ejecutar despues de schema.sql sobre la base sica_db.
 
--- Roles iniciales
+\set ON_ERROR_STOP on
+BEGIN;
+
 INSERT INTO roles (nombre) VALUES
-    ('ADMINISTRADOR'),
-    ('GUARDA_SEGURIDAD'),
-    ('FUNCIONARIO');
+    ('ADMINISTRADOR'), ('GUARDA_SEGURIDAD'), ('FUNCIONARIO');
 
--- Permisos utilizados por las operaciones actuales de SICA
 INSERT INTO permisos (nombre) VALUES
-    ('crear_usuario'),
-    ('actualizar_usuario'),
-    ('eliminar_usuario'),
-    ('administrar_roles'),
-    ('registrar_persona'),
-    ('actualizar_persona'),
-    ('eliminar_persona'),
-    ('consultar_persona'),
-    ('bloquear_persona'),
-    ('gestionar_empresas'),
-    ('registrar_visita'),
-    ('consultar_visita'),
-    ('registrar_checkin'),
-    ('registrar_checkout'),
-    ('registrar_visitante_no_anunciado'),
-    ('responder_solicitud_visita'),
-    ('solicitar_ingreso_por_olvido'),
-    ('registrar_incidente'),
-    ('generar_reporte'),
-    ('consultar_bitacora');
+    ('crear_usuario'), ('actualizar_usuario'), ('eliminar_usuario'),
+    ('administrar_roles'), ('registrar_persona'), ('actualizar_persona'),
+    ('eliminar_persona'), ('consultar_persona'), ('bloquear_persona'),
+    ('gestionar_empresas'), ('registrar_visita'), ('consultar_visita'),
+    ('registrar_checkin'), ('registrar_checkout'),
+    ('registrar_visitante_no_anunciado'), ('responder_solicitud_visita'),
+    ('solicitar_ingreso_por_olvido'), ('registrar_incidente'),
+    ('generar_reporte'), ('consultar_bitacora');
 
--- El Administrador tiene todos los permisos
+-- RBAC del administrador: todos los permisos.
 INSERT INTO rol_permiso (rol_id, permiso_id)
-SELECT r.id, p.id
-FROM roles r
-CROSS JOIN permisos p
+SELECT r.id, p.id FROM roles r CROSS JOIN permisos p
 WHERE r.nombre = 'ADMINISTRADOR';
 
--- Permisos del Guarda de Seguridad
+-- RBAC del guarda: operaciones de acceso y seguridad.
 INSERT INTO rol_permiso (rol_id, permiso_id)
-SELECT r.id, p.id
-FROM roles r
-CROSS JOIN permisos p
+SELECT r.id, p.id FROM roles r CROSS JOIN permisos p
 WHERE r.nombre = 'GUARDA_SEGURIDAD'
-  AND p.nombre IN (
-      'consultar_persona',
-      'consultar_visita',
-      'registrar_checkin',
-      'registrar_checkout',
-      'registrar_visitante_no_anunciado',
-      'solicitar_ingreso_por_olvido',
-      'registrar_incidente'
-  );
+AND p.nombre IN (
+    'consultar_persona', 'consultar_visita', 'registrar_checkin',
+    'registrar_checkout', 'registrar_visitante_no_anunciado',
+    'solicitar_ingreso_por_olvido', 'registrar_incidente'
+);
 
--- Permisos del Funcionario
+-- RBAC del funcionario: pre-registro y aprobaciones.
 INSERT INTO rol_permiso (rol_id, permiso_id)
-SELECT r.id, p.id
-FROM roles r
-CROSS JOIN permisos p
+SELECT r.id, p.id FROM roles r CROSS JOIN permisos p
 WHERE r.nombre = 'FUNCIONARIO'
-  AND p.nombre IN (
-      'registrar_persona',
-      'gestionar_empresas',
-      'registrar_visita',
-      'responder_solicitud_visita'
-  );
+AND p.nombre IN (
+    'registrar_persona', 'gestionar_empresas', 'registrar_visita',
+    'responder_solicitud_visita'
+);
 
--- Usuarios de ejemplo. Las contrasenas se guardan como texto porque
--- el LoginService actual todavia realiza una comparacion directa.
-INSERT INTO usuarios (nombre, documento, username, password, rol_id, activo) VALUES
-    ('Administrador SICA', '10000001', 'admin', 'admin123',
-        (SELECT id FROM roles WHERE nombre = 'ADMINISTRADOR'), TRUE),
-    ('Guarda Principal', '10000002', 'guarda', 'guarda123',
-        (SELECT id FROM roles WHERE nombre = 'GUARDA_SEGURIDAD'), TRUE),
-    ('Funcionario Acme', '10000003', 'funcionario', 'funcionario123',
-        (SELECT id FROM roles WHERE nombre = 'FUNCIONARIO'), TRUE);
-
--- Empresas de ejemplo
 INSERT INTO empresas (nombre, identificador) VALUES
     ('Acme Tecnologia', 'NIT-900001'),
     ('Innovacion Central', 'NIT-900002');
 
--- Personas de ejemplo. El documento del funcionario coincide con su usuario,
--- lo cual permite recibir y responder solicitudes de aprobacion.
-INSERT INTO personas (nombre, documento, tipo, empresa_id, foto_url, estado_acceso) VALUES
+INSERT INTO personas (
+    nombre, documento, tipo, empresa_id, foto_url, estado_acceso
+) VALUES
+    ('Administrador SICA', '10000001', 'TRABAJADOR', NULL,
+        'https://example.com/fotos/admin.jpg', 'HABILITADO'),
+    ('Guarda Principal', '10000002', 'TRABAJADOR', NULL,
+        'https://example.com/fotos/guarda.jpg', 'HABILITADO'),
     ('Funcionario Acme', '10000003', 'TRABAJADOR',
         (SELECT id FROM empresas WHERE identificador = 'NIT-900001'),
         'https://example.com/fotos/funcionario.jpg', 'HABILITADO'),
     ('Trabajador de Prueba', '20000001', 'TRABAJADOR',
         (SELECT id FROM empresas WHERE identificador = 'NIT-900001'),
         'https://example.com/fotos/trabajador.jpg', 'HABILITADO'),
+    ('Trabajador Sin Carnet', '20000002', 'TRABAJADOR',
+        (SELECT id FROM empresas WHERE identificador = 'NIT-900002'),
+        'https://example.com/fotos/trabajador-sin-carnet.jpg', 'HABILITADO'),
+    ('Persona Restringida', '20000003', 'TRABAJADOR',
+        (SELECT id FROM empresas WHERE identificador = 'NIT-900002'),
+        'https://example.com/fotos/persona-restringida.jpg', 'RESTRINGIDO'),
     ('Invitado Aprobado', '30000001', 'INVITADO', NULL,
         'https://example.com/fotos/invitado-aprobado.jpg', 'HABILITADO'),
     ('Invitado Pendiente', '30000002', 'INVITADO', NULL,
         'https://example.com/fotos/invitado-pendiente.jpg', 'HABILITADO');
 
--- Visita aprobada para probar un check-in normal
-INSERT INTO visitas (
-    invitado_id, persona_visitada_id, fecha_hora_visita, estado
-) VALUES (
+-- Credenciales de ejemplo. LoginService aun compara texto directamente.
+INSERT INTO usuarios (persona_id, username, password, rol_id, activo) VALUES
+    ((SELECT id FROM personas WHERE documento = '10000001'), 'admin',
+        'admin123', (SELECT id FROM roles WHERE nombre = 'ADMINISTRADOR'), TRUE),
+    ((SELECT id FROM personas WHERE documento = '10000002'), 'guarda',
+        'guarda123', (SELECT id FROM roles WHERE nombre = 'GUARDA_SEGURIDAD'), TRUE),
+    ((SELECT id FROM personas WHERE documento = '10000003'), 'funcionario',
+        'funcionario123', (SELECT id FROM roles WHERE nombre = 'FUNCIONARIO'), TRUE);
+
+-- Invitado pre-registrado aprobado.
+INSERT INTO visitas (invitado_id, persona_visitada_id, fecha_hora_visita, estado)
+VALUES (
     (SELECT id FROM personas WHERE documento = '30000001'),
     (SELECT id FROM personas WHERE documento = '10000003'),
-    NOW(),
-    'APROBADO'
+    CURRENT_TIMESTAMP, 'APROBADO'
 );
 
--- Solicitud pendiente para probar aprobacion o rechazo
-INSERT INTO visitas (
-    invitado_id, persona_visitada_id, fecha_hora_visita, estado
-) VALUES (
+-- Invitado no anunciado pendiente.
+INSERT INTO visitas (invitado_id, persona_visitada_id, fecha_hora_visita, estado)
+VALUES (
     (SELECT id FROM personas WHERE documento = '30000002'),
     (SELECT id FROM personas WHERE documento = '10000003'),
-    NOW(),
-    'PENDIENTE_APROBACION'
+    CURRENT_TIMESTAMP, 'PENDIENTE_APROBACION'
 );
 
--- Visita abierta para probar deteccion de una salida olvidada
+-- Trabajador sin carnet pendiente por olvido.
+INSERT INTO visitas (invitado_id, persona_visitada_id, fecha_hora_visita, estado)
+VALUES (
+    (SELECT id FROM personas WHERE documento = '20000002'),
+    (SELECT id FROM personas WHERE documento = '10000003'),
+    CURRENT_TIMESTAMP, 'PENDIENTE_APROBACION_POR_OLVIDO'
+);
+
+-- Visita abierta para probar una salida olvidada.
 INSERT INTO visitas (
     invitado_id, persona_visitada_id, fecha_hora_visita, estado,
     fecha_hora_checkin, usuario_checkin
 ) VALUES (
     (SELECT id FROM personas WHERE documento = '20000001'),
     (SELECT id FROM personas WHERE documento = '10000003'),
-    DATE_SUB(NOW(), INTERVAL 1 DAY),
-    'DENTRO',
-    DATE_SUB(NOW(), INTERVAL 1 DAY),
-    'guarda'
+    CURRENT_TIMESTAMP - INTERVAL '1 day', 'DENTRO',
+    CURRENT_TIMESTAMP - INTERVAL '1 day', 'guarda'
 );
 
--- Incidente de ejemplo asociado al trabajador
-INSERT INTO incidentes (descripcion, fecha_hora, persona_id, usuario_responsable) VALUES (
-    'Incidente de prueba para validar consultas y reportes',
-    NOW(),
-    (SELECT id FROM personas WHERE documento = '20000001'),
-    'guarda'
+INSERT INTO incidentes (descripcion, fecha_hora, persona_id, usuario_responsable)
+VALUES (
+    'Incidente de prueba para validar consultas y reportes', CURRENT_TIMESTAMP,
+    (SELECT id FROM personas WHERE documento = '20000001'), 'guarda'
 );
+
+-- Permite probar la consulta de auditoria desde el primer inicio.
+INSERT INTO bitacora_auditoria (
+    accion, entidad, descripcion, usuario_responsable, fecha, resultado
+) VALUES (
+    'CARGAR_DATOS_INICIALES', 'SISTEMA',
+    'Carga inicial de datos de prueba PostgreSQL',
+    'SISTEMA', CURRENT_TIMESTAMP, 'EXITOSO'
+);
+
+COMMIT;

@@ -1,5 +1,5 @@
 -- Transacciones PostgreSQL para SICA - E13-HU06
--- Requiere haber ejecutado ddl_postgresql.sql y dml_postgresql.sql.
+-- Requiere haber ejecutado ddl_postgresql.sql y data.sql.
 -- Ejecutar con: psql -U postgres -d sica_db -f tcl_postgresql.sql
 
 \set ON_ERROR_STOP on
