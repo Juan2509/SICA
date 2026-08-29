@@ -84,79 +84,81 @@ simular su utilización.
 
 ## Modelo entidad-relación
 
-El siguiente diagrama representa las tablas y relaciones definidas en
-`schema.sql`:
+El siguiente diagrama representa el modelo PostgreSQL definido en
+`schema_postgresql.sql`. En esta etapa se conserva `schema.sql` como esquema
+MySQL operativo; su reemplazo se realizará junto con la migración completa de
+los datos y adaptadores para no dejar tecnologías mezcladas.
 
 ```mermaid
 erDiagram
     ROLES {
-        INT id PK
+        BIGINT id PK
         VARCHAR nombre UK
     }
 
     PERMISOS {
-        INT id PK
+        BIGINT id PK
         VARCHAR nombre UK
     }
 
     ROL_PERMISO {
-        INT rol_id PK, FK
-        INT permiso_id PK, FK
+        BIGINT rol_id PK, FK
+        BIGINT permiso_id PK, FK
     }
 
     USUARIOS {
-        INT id PK
+        BIGINT id PK
         VARCHAR nombre
-        VARCHAR documento
+        VARCHAR documento UK
         VARCHAR username UK
         VARCHAR password
-        INT rol_id FK
+        BIGINT rol_id FK
         BOOLEAN activo
     }
 
     EMPRESAS {
-        INT id PK
+        BIGINT id PK
         VARCHAR nombre
         VARCHAR identificador UK
     }
 
     PERSONAS {
-        INT id PK
+        BIGINT id PK
         VARCHAR nombre
         VARCHAR documento UK
         VARCHAR tipo
-        INT empresa_id FK
+        BIGINT empresa_id FK
         VARCHAR foto_url
         VARCHAR estado_acceso
     }
 
     VISITAS {
-        INT id PK
-        INT invitado_id FK
-        INT persona_visitada_id FK
-        DATETIME fecha_hora_visita
+        BIGINT id PK
+        BIGINT invitado_id FK
+        BIGINT persona_visitada_id FK
+        TIMESTAMPTZ fecha_hora_visita
         VARCHAR estado
-        DATETIME fecha_hora_checkin
+        TIMESTAMPTZ fecha_hora_checkin
         VARCHAR usuario_checkin
-        DATETIME fecha_hora_checkout
+        TIMESTAMPTZ fecha_hora_checkout
         VARCHAR usuario_checkout
     }
 
     INCIDENTES {
-        INT id PK
+        BIGINT id PK
         VARCHAR descripcion
-        DATETIME fecha_hora
-        INT persona_id FK
+        TIMESTAMPTZ fecha_hora
+        BIGINT persona_id FK
         VARCHAR usuario_responsable
     }
 
     BITACORA_AUDITORIA {
-        INT id PK
+        BIGINT id PK
         VARCHAR accion
         VARCHAR entidad
         VARCHAR descripcion
         VARCHAR usuario_responsable
-        DATETIME fecha
+        TIMESTAMPTZ fecha
         VARCHAR resultado
     }
 
@@ -173,6 +175,12 @@ Una persona puede pertenecer a una empresa. Cada visita referencia a la persona
 que ingresa y a la persona visitada. Un incidente puede asociarse opcionalmente
 a una persona. La bitácora conserva el responsable como texto para mantener su
 identidad histórica aunque un usuario sea eliminado.
+
+El modelo cumple 4FN porque cada tabla representa un solo hecho y no almacena
+listas ni grupos repetidos. La relación muchos a muchos entre roles y permisos
+se separa en `rol_permiso`; empresas, personas, visitas e incidentes conservan
+sus propias responsabilidades. Las restricciones `UNIQUE`, `CHECK`, claves
+foráneas y reglas `ON DELETE` evitan duplicados y referencias inconsistentes.
 
 ## Decisiones de diseño
 

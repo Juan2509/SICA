@@ -12,6 +12,8 @@ import com.sica.rol.domain.Rol;
 import com.sica.usuario.application.port.UsuarioRepositoryPort;
 import com.sica.usuario.domain.Usuario;
 import com.sica.visita.application.dto.DetalleVisitaConsulta;
+import com.sica.visita.application.dto.SolicitudAprobacionInfo;
+import com.sica.visita.application.exception.AccesoNoAutorizadoException;
 import com.sica.visita.application.exception.VisitaInvalidaException;
 import com.sica.visita.application.port.VisitaRepositoryPort;
 import com.sica.visita.domain.EstadoVisita;
@@ -30,21 +32,25 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FlujoInvitadoPreregistradoTest {
 
     private VisitaService visitaService;
     private PersonaRepositoryEnMemoria personaRepository;
+    private VisitaRepositoryEnMemoria visitaRepository;
     private BitacoraEnMemoria bitacora;
     private Persona invitado;
     private Persona funcionario;
+    private Persona trabajador;
 
     @BeforeEach
     void prepararFlujo() {
         personaRepository = new PersonaRepositoryEnMemoria();
-        VisitaRepositoryEnMemoria visitaRepository = new VisitaRepositoryEnMemoria();
+        visitaRepository = new VisitaRepositoryEnMemoria();
         UsuarioRepositoryEnMemoria usuarioRepository = new UsuarioRepositoryEnMemoria();
         RolRepositoryEnMemoria rolRepository = new RolRepositoryEnMemoria();
         bitacora = new BitacoraEnMemoria();
@@ -56,6 +62,9 @@ class FlujoInvitadoPreregistradoTest {
         funcionario = personaRepository.agregar(
                 new Persona("Funcionario Prueba", "10000003", TipoPersona.TRABAJADOR));
 
+        trabajador = personaRepository.agregar(
+                new Persona("Trabajador Sin Carnet", "10000004", TipoPersona.TRABAJADOR));
+
         usuarioRepository.agregar(
                 new Usuario("Funcionario Prueba", "10000003", "funcionario", "clave", 3L));
         usuarioRepository.agregar(
@@ -65,6 +74,9 @@ class FlujoInvitadoPreregistradoTest {
         rolRepository.conceder(2L, "consultar_visita");
         rolRepository.conceder(2L, "registrar_checkin");
         rolRepository.conceder(2L, "registrar_checkout");
+        rolRepository.conceder(2L, "registrar_visitante_no_anunciado");
+        rolRepository.conceder(2L, "solicitar_ingreso_por_olvido");
+        rolRepository.conceder(3L, "responder_solicitud_visita");
 
         AutorizacionService autorizacionService = new AutorizacionService(
                 usuarioRepository, rolRepository);
@@ -122,6 +134,133 @@ class FlujoInvitadoPreregistradoTest {
                         LocalDateTime.now(),
                         "funcionario"
                 )
+        );
+    }
+
+    @Test
+    void permiteIngresoCuandoFuncionarioApruebaInvitadoNoAnunciado() {
+        Visita solicitud = visitaService.registrarVisitanteNoAnunciado(
+                "Invitado No Anunciado",
+                "30000002",
+                "https://example.com/foto-no-anunciado.jpg",
+                funcionario.getId(),
+                "guarda"
+        );
+
+        assertEquals(EstadoVisita.PENDIENTE_APROBACION, solicitud.getEstado());
+
+        List<SolicitudAprobacionInfo> pendientes = visitaService.consultarSolicitudesPendientes(
+                funcionario.getId(), "funcionario");
+
+        assertEquals(1, pendientes.size());
+        assertEquals(solicitud.getId(), pendientes.get(0).getVisitaId());
+        assertEquals("Invitado No Anunciado", pendientes.get(0).getNombreVisitante());
+        assertEquals("https://example.com/foto-no-anunciado.jpg",
+                pendientes.get(0).getFotoUrlVisitante());
+
+        visitaService.aprobarSolicitud(solicitud.getId(), "funcionario");
+
+        assertEquals(EstadoVisita.APROBADO,
+                visitaService.consultarEstadoSolicitud(solicitud.getId(), "guarda"));
+
+        Visita ingreso = visitaService.registrarCheckIn("30000002", "guarda");
+
+        assertEquals(EstadoVisita.DENTRO, ingreso.getEstado());
+        assertTrue(bitacora.acciones.contains("SOLICITAR_VISITA_NO_ANUNCIADA"));
+        assertTrue(bitacora.acciones.contains("APROBAR_SOLICITUD_VISITA"));
+        assertTrue(bitacora.acciones.contains("REGISTRAR_CHECKIN"));
+    }
+
+    @Test
+    void impideIngresoCuandoFuncionarioRechazaInvitadoNoAnunciado() {
+        Visita solicitud = visitaService.registrarVisitanteNoAnunciado(
+                "Invitado Rechazado",
+                "30000003",
+                null,
+                funcionario.getId(),
+                "guarda"
+        );
+
+        visitaService.rechazarSolicitud(solicitud.getId(), "funcionario");
+
+        assertEquals(EstadoVisita.RECHAZADO,
+                visitaService.consultarEstadoSolicitud(solicitud.getId(), "guarda"));
+        assertThrows(AccesoNoAutorizadoException.class,
+                () -> visitaService.registrarCheckIn("30000003", "guarda"));
+        assertTrue(bitacora.acciones.contains("RECHAZAR_SOLICITUD_VISITA"));
+        assertFalse(bitacora.acciones.contains("REGISTRAR_CHECKIN"));
+    }
+
+    @Test
+    void permiteIngresoPuntualCuandoFuncionarioApruebaOlvidoDeCarnet() {
+        Visita solicitud = visitaService.solicitarIngresoPorOlvido(
+                trabajador.getDocumento(), funcionario.getId(), "guarda");
+
+        assertEquals(EstadoVisita.PENDIENTE_APROBACION_POR_OLVIDO, solicitud.getEstado());
+
+        List<SolicitudAprobacionInfo> pendientes = visitaService.consultarSolicitudesPendientes(
+                funcionario.getId(), "funcionario");
+
+        assertEquals(1, pendientes.size());
+        assertEquals(trabajador.getDocumento(), pendientes.get(0).getDocumentoVisitante());
+        assertEquals(EstadoVisita.PENDIENTE_APROBACION_POR_OLVIDO,
+                pendientes.get(0).getEstado());
+
+        visitaService.aprobarSolicitud(solicitud.getId(), "funcionario");
+
+        assertEquals(EstadoVisita.APROBADO,
+                visitaService.consultarEstadoSolicitud(solicitud.getId(), "guarda"));
+
+        Visita ingreso = visitaService.registrarCheckIn(trabajador.getDocumento(), "guarda");
+
+        assertEquals(EstadoVisita.DENTRO, ingreso.getEstado());
+        assertTrue(bitacora.acciones.contains("SOLICITAR_INGRESO_POR_OLVIDO"));
+        assertTrue(bitacora.acciones.contains("APROBAR_SOLICITUD_VISITA"));
+        assertTrue(bitacora.acciones.contains("REGISTRAR_CHECKIN"));
+    }
+
+    @Test
+    void impideIngresoCuandoFuncionarioRechazaOlvidoDeCarnet() {
+        Visita solicitud = visitaService.solicitarIngresoPorOlvido(
+                trabajador.getDocumento(), funcionario.getId(), "guarda");
+
+        visitaService.rechazarSolicitud(solicitud.getId(), "funcionario");
+
+        assertEquals(EstadoVisita.RECHAZADO,
+                visitaService.consultarEstadoSolicitud(solicitud.getId(), "guarda"));
+        assertThrows(AccesoNoAutorizadoException.class,
+                () -> visitaService.registrarCheckIn(trabajador.getDocumento(), "guarda"));
+        assertTrue(bitacora.acciones.contains("SOLICITAR_INGRESO_POR_OLVIDO"));
+        assertTrue(bitacora.acciones.contains("RECHAZAR_SOLICITUD_VISITA"));
+        assertFalse(bitacora.acciones.contains("REGISTRAR_CHECKIN"));
+    }
+
+    @Test
+    void regularizaSalidaOlvidadaYCreaUnNuevoIngreso() {
+        Visita visitaAnterior = new Visita(
+                invitado.getId(),
+                funcionario.getId(),
+                LocalDateTime.now().minusDays(1),
+                EstadoVisita.DENTRO
+        );
+        visitaAnterior.setFechaHoraCheckIn(LocalDateTime.now().minusDays(1));
+        visitaAnterior = visitaRepository.guardar(visitaAnterior);
+
+        Visita nuevoIngreso = visitaService.registrarCheckIn(invitado.getDocumento(), "guarda");
+
+        assertEquals(EstadoVisita.CERRADA_POR_SISTEMA, visitaAnterior.getEstado());
+        assertNotNull(visitaAnterior.getFechaHoraCheckOut());
+        assertEquals("SISTEMA", visitaAnterior.getUsuarioCheckOut());
+
+        assertFalse(visitaAnterior.getId().equals(nuevoIngreso.getId()));
+        assertEquals(EstadoVisita.DENTRO, nuevoIngreso.getEstado());
+        assertNotNull(nuevoIngreso.getFechaHoraCheckIn());
+        assertEquals("guarda", nuevoIngreso.getUsuarioCheckIn());
+        assertEquals(2, visitaRepository.listarPorInvitado(invitado.getId()).size());
+
+        assertEquals(
+                List.of("REGULARIZAR_SALIDA_OLVIDADA", "REGISTRAR_CHECKIN"),
+                bitacora.acciones
         );
     }
 
@@ -296,7 +435,11 @@ class FlujoInvitadoPreregistradoTest {
 
         @Override
         public List<Visita> listarPendientesPorPersonaVisitada(Long personaVisitadaId) {
-            return List.of();
+            return visitas.stream()
+                    .filter(visita -> visita.getPersonaVisitadaId().equals(personaVisitadaId))
+                    .filter(visita -> visita.getEstado() == EstadoVisita.PENDIENTE_APROBACION
+                            || visita.getEstado() == EstadoVisita.PENDIENTE_APROBACION_POR_OLVIDO)
+                    .toList();
         }
 
         @Override
