@@ -64,6 +64,16 @@ public class VisitaService {
         if (!personaRepository.existePorId(invitadoId)) {
             throw new PersonaNoEncontradaException("No existe una persona (invitado) con id: " + invitadoId);
         }
+
+        Persona invitado = personaRepository.buscarPorId(invitadoId)
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe una persona (invitado) con id: " + invitadoId));
+
+        if (invitado.getTipo() != TipoPersona.INVITADO) {
+            throw new VisitaInvalidaException(
+                    "La persona que se pre-registra debe ser de tipo INVITADO.");
+        }
+
         if (!personaRepository.existePorId(personaVisitadaId)) {
             throw new PersonaNoEncontradaException("No existe una persona visitada con id: " + personaVisitadaId);
         }
