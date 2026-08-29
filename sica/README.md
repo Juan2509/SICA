@@ -89,6 +89,17 @@ El siguiente diagrama representa el modelo PostgreSQL definido en
 MySQL operativo; su reemplazo se realizará junto con la migración completa de
 los datos y adaptadores para no dejar tecnologías mezcladas.
 
+Para crear la base y toda su estructura desde cero con PostgreSQL se utiliza:
+
+```bash
+psql -U postgres -f ddl_postgresql.sql
+```
+
+`ddl_postgresql.sql` crea `sica_db`, se conecta y carga
+`schema_postgresql.sql`. El esquema es un script de reconstrucción: utiliza
+`DROP TABLE IF EXISTS` antes de crear las tablas, por lo que elimina los datos
+anteriores. No debe ejecutarse sobre una base que se quiera conservar.
+
 ```mermaid
 erDiagram
     ROLES {
