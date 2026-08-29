@@ -108,8 +108,7 @@ erDiagram
 
     USUARIOS {
         BIGINT id PK
-        VARCHAR nombre
-        VARCHAR documento UK
+        BIGINT persona_id FK, UK
         VARCHAR username UK
         VARCHAR password
         BIGINT rol_id FK
@@ -163,6 +162,7 @@ erDiagram
     }
 
     ROLES ||--o{ USUARIOS : asigna
+    PERSONAS ||--o| USUARIOS : posee
     ROLES ||--o{ ROL_PERMISO : contiene
     PERMISOS ||--o{ ROL_PERMISO : pertenece
     EMPRESAS o|--o{ PERSONAS : agrupa
@@ -176,11 +176,38 @@ que ingresa y a la persona visitada. Un incidente puede asociarse opcionalmente
 a una persona. La bitácora conserva el responsable como texto para mantener su
 identidad histórica aunque un usuario sea eliminado.
 
-El modelo cumple 4FN porque cada tabla representa un solo hecho y no almacena
-listas ni grupos repetidos. La relación muchos a muchos entre roles y permisos
-se separa en `rol_permiso`; empresas, personas, visitas e incidentes conservan
-sus propias responsabilidades. Las restricciones `UNIQUE`, `CHECK`, claves
-foráneas y reglas `ON DELETE` evitan duplicados y referencias inconsistentes.
+### Normalización hasta Cuarta Forma Normal
+
+El modelo PostgreSQL cumple las formas normales de la siguiente manera:
+
+- **1FN:** cada columna contiene un valor atómico. No se guardan listas de
+  permisos, empresas o visitas dentro de una columna.
+- **2FN:** las tablas con una clave de una sola columna dependen completamente
+  de esa clave. En `rol_permiso`, que tiene clave compuesta, no existen datos
+  adicionales que dependan solo de `rol_id` o solo de `permiso_id`.
+- **3FN:** los datos descriptivos dependen de la entidad a la que pertenecen.
+  `usuarios` ya no repite nombre y documento: utiliza `persona_id`, mientras
+  `personas` conserva esos datos una única vez. Así se evita que el documento o
+  nombre de una cuenta sea diferente al de su persona.
+- **4FN:** la relación multivaluada independiente rol-permiso se representa con
+  `rol_permiso`. Cada fila asocia un solo rol con un solo permiso, permitiendo
+  agregar o retirar permisos sin modificar la tabla `roles`.
+
+Dependencias resueltas:
+
+- La dependencia parcial de una posible relación rol-permiso se eliminó con la
+  clave compuesta `(rol_id, permiso_id)` y sin atributos dependientes de una
+  sola parte.
+- La duplicación transitiva `usuario -> documento -> datos personales` se
+  eliminó mediante la relación única `usuarios.persona_id -> personas.id`.
+- La dependencia multivaluada `rol ->> permiso` quedó separada en
+  `rol_permiso`.
+
+Los nombres de usuario guardados en visitas, incidentes y bitácora son una
+instantánea histórica deliberada: permiten conservar quién ejecutó una acción
+aunque la cuenta cambie posteriormente. No representan listas ni dependencias
+multivaluadas. Las restricciones `UNIQUE`, `CHECK`, claves foráneas y reglas
+`ON DELETE` evitan duplicados y referencias inconsistentes.
 
 ## Decisiones de diseño
 
