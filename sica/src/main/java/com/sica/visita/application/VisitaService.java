@@ -6,7 +6,7 @@ import com.sica.persona.application.port.PersonaRepositoryPort;
 import com.sica.persona.domain.Persona;
 import com.sica.persona.domain.EstadoAcceso;
 import com.sica.persona.domain.TipoPersona;
-import com.sica.usuario.application.port.BitacoraAuditoriaPort;
+import com.sica.auditoria.application.port.BitacoraAuditoriaPort;
 import com.sica.visita.application.dto.DetalleVisitaConsulta;
 import com.sica.visita.application.dto.PersonaDentroInfo;
 import com.sica.visita.application.dto.SolicitudAprobacionInfo;

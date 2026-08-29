@@ -5,7 +5,7 @@ import com.sica.persona.application.exception.PersonaNoEncontradaException;
 import com.sica.persona.application.port.PersonaRepositoryPort;
 import com.sica.persona.domain.Persona;
 import com.sica.reporte.application.dto.ReporteVisitaInfo;
-import com.sica.usuario.application.port.BitacoraAuditoriaPort;
+import com.sica.auditoria.application.port.BitacoraAuditoriaPort;
 import com.sica.visita.application.port.VisitaRepositoryPort;
 import com.sica.visita.domain.EstadoVisita;
 

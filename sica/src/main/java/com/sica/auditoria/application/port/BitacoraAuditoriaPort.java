@@ -1,4 +1,4 @@
-package com.sica.usuario.application.port;
+package com.sica.auditoria.application.port;
 
 /**
  * Puerto de salida para registrar acciones en la bitacora de auditoria.

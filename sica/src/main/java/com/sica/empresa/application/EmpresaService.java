@@ -6,7 +6,7 @@ import com.sica.empresa.application.exception.EmpresaInvalidaException;
 import com.sica.empresa.application.exception.EmpresaNoEncontradaException;
 import com.sica.empresa.application.port.EmpresaRepositoryPort;
 import com.sica.empresa.domain.Empresa;
-import com.sica.usuario.application.port.BitacoraAuditoriaPort;
+import com.sica.auditoria.application.port.BitacoraAuditoriaPort;
 
 /**
  * Servicio de aplicacion para la Historia de Usuario E2-HU02 (Registrar empresa).

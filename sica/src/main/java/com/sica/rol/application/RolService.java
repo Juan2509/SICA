@@ -8,7 +8,7 @@ import com.sica.rol.application.exception.RolNoEncontradoException;
 import com.sica.rol.application.port.RolRepositoryPort;
 import com.sica.rol.domain.Permiso;
 import com.sica.rol.domain.Rol;
-import com.sica.usuario.application.port.BitacoraAuditoriaPort;
+import com.sica.auditoria.application.port.BitacoraAuditoriaPort;
 
 /**
  * Servicio de aplicacion para la Historia de Usuario E1-HU02 (Gestionar roles).

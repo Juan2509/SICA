@@ -6,7 +6,7 @@ import com.sica.incidente.application.port.IncidenteRepositoryPort;
 import com.sica.incidente.domain.Incidente;
 import com.sica.persona.application.exception.PersonaNoEncontradaException;
 import com.sica.persona.application.port.PersonaRepositoryPort;
-import com.sica.usuario.application.port.BitacoraAuditoriaPort;
+import com.sica.auditoria.application.port.BitacoraAuditoriaPort;
 
 import java.time.LocalDateTime;
 

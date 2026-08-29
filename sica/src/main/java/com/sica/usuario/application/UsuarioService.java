@@ -3,7 +3,7 @@ package com.sica.usuario.application;
 import com.sica.autorizacion.application.AutorizacionService;
 import com.sica.usuario.application.exception.UsuarioDuplicadoException;
 import com.sica.usuario.application.exception.UsuarioInvalidoException;
-import com.sica.usuario.application.port.BitacoraAuditoriaPort;
+import com.sica.auditoria.application.port.BitacoraAuditoriaPort;
 import com.sica.usuario.application.port.UsuarioRepositoryPort;
 import com.sica.usuario.domain.Usuario;
 

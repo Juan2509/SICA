@@ -3,7 +3,7 @@ package com.sica.autenticacion.application;
 import java.util.Optional;
 
 import com.sica.autenticacion.application.exception.CredencialesInvalidasException;
-import com.sica.usuario.application.port.BitacoraAuditoriaPort;
+import com.sica.auditoria.application.port.BitacoraAuditoriaPort;
 import com.sica.usuario.application.port.UsuarioRepositoryPort;
 import com.sica.usuario.domain.Usuario;
 

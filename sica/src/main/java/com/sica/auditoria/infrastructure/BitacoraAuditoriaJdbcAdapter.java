@@ -1,9 +1,9 @@
 package com.sica.auditoria.infrastructure;
 
 import com.sica.auditoria.application.port.BitacoraConsultaPort;
+import com.sica.auditoria.application.port.BitacoraAuditoriaPort;
 import com.sica.auditoria.domain.RegistroAuditoria;
 import com.sica.infraestructura.ConexionBD;
-import com.sica.usuario.application.port.BitacoraAuditoriaPort;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

@@ -12,7 +12,7 @@ import com.sica.persona.application.port.PersonaRepositoryPort;
 import com.sica.persona.domain.Persona;
 import com.sica.persona.domain.EstadoAcceso;
 import com.sica.persona.domain.TipoPersona;
-import com.sica.usuario.application.port.BitacoraAuditoriaPort;
+import com.sica.auditoria.application.port.BitacoraAuditoriaPort;
 
 /**
  * Servicio de aplicacion para E2-HU01 (Registrar persona), E2-HU02 (asociar
