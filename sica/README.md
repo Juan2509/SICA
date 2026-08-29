@@ -135,6 +135,24 @@ Los niveles de autorización no se mezclan:
 La aplicación deberá conectarse con `sica_app`. La cuenta administrativa
 `postgres` se reserva para ejecutar scripts de instalación y mantenimiento.
 
+### Transacciones PostgreSQL (TCL)
+
+El flujo transaccional de salida olvidada se prueba con:
+
+```bash
+psql -U postgres -d sica_db -f tcl_postgresql.sql
+```
+
+El script utiliza `BEGIN`, `SAVEPOINT`, `COMMIT`, `ROLLBACK TO SAVEPOINT` y
+`ROLLBACK`. La regularización bloquea la visita abierta con `FOR UPDATE`, cierra
+la visita anterior, crea el nuevo ingreso y registra la auditoría como una sola
+unidad. Si el proceso falla antes del `COMMIT`, la transacción puede revertirse
+sin dejar una visita cerrada sin su nuevo registro.
+
+El mismo archivo incluye una segunda transacción de prueba que cambia
+temporalmente un estado de acceso y luego ejecuta `ROLLBACK`; por lo tanto, ese
+cambio no permanece en la base.
+
 ```mermaid
 erDiagram
     ROLES {
