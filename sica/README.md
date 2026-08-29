@@ -133,6 +133,30 @@ Los niveles de autorización no se mezclan:
 La aplicación deberá conectarse con `sica_app`. La cuenta administrativa
 `postgres` se reserva para ejecutar scripts de instalación y mantenimiento.
 
+### Organización de scripts SQL
+
+Los entregables obligatorios `schema.sql` y `data.sql` permanecen en la raíz de
+`sica`. La carpeta `database/` organiza puntos de entrada por responsabilidad;
+estos reutilizan las fuentes oficiales con `\ir`, por lo que no se mantienen
+copias independientes que puedan quedar desactualizadas.
+
+```text
+database/
+├── schema.sql
+├── data.sql
+├── ddl/
+│   └── 01_create_database.sql
+├── dml/
+│   ├── 01_seed_data.sql
+│   └── 02_operations_examples.sql
+├── dcl/
+│   └── 01_roles_permissions.sql
+├── tcl/
+│   └── 01_transactions.sql
+└── diagrams/
+    └── modelo-er.md
+```
+
 ### Transacciones PostgreSQL (TCL)
 
 El flujo transaccional de salida olvidada se prueba con:
