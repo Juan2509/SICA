@@ -18,7 +18,7 @@ import java.util.Optional;
 
 /**
  * Adaptador de salida (hexagonal): implementa VisitaRepositoryPort
- * usando JDBC para hablar directamente con MySQL.
+ * usando JDBC para hablar directamente con PostgreSQL.
  */
 public class VisitaRepositoryJdbcAdapter implements VisitaRepositoryPort {
 

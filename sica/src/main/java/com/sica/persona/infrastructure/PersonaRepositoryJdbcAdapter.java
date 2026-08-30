@@ -15,7 +15,7 @@ import com.sica.persona.domain.TipoPersona;
 
 /**
  * Adaptador de salida (hexagonal): implementa PersonaRepositoryPort
- * usando JDBC para hablar directamente con MySQL.
+ * usando JDBC para hablar directamente con PostgreSQL.
  */
 public class PersonaRepositoryJdbcAdapter implements PersonaRepositoryPort {
 

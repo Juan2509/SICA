@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * Adaptador de salida (hexagonal): implementa RolRepositoryPort
- * usando JDBC para hablar directamente con MySQL.
+ * usando JDBC para hablar directamente con PostgreSQL.
  */
 public class RolRepositoryJdbcAdapter implements RolRepositoryPort {
 

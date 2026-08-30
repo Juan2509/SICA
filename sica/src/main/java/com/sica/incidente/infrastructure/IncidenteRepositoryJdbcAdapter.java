@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 
 /**
- * Adaptador JDBC para guardar incidentes en MySQL.
+ * Adaptador JDBC para guardar incidentes en PostgreSQL.
  */
 public class IncidenteRepositoryJdbcAdapter implements IncidenteRepositoryPort {
 

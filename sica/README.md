@@ -19,7 +19,7 @@ autorizar visitantes no anunciados.
 
 ## Solución
 
-SICA centraliza los datos en MySQL y aplica las siguientes reglas:
+SICA centraliza los datos en PostgreSQL y aplica las siguientes reglas:
 
 - Autorización RBAC mediante roles y permisos almacenados en la base de datos.
 - Pre-registro y consulta de visitas.
@@ -36,9 +36,9 @@ SICA centraliza los datos en MySQL y aplica las siguientes reglas:
 
 - Java 17.
 - Maven.
-- MySQL 8.
+- PostgreSQL.
 - JDBC.
-- MySQL Connector/J 8.3.0.
+- PostgreSQL JDBC Driver 42.7.7.
 
 ## Arquitectura y organización
 
@@ -56,7 +56,7 @@ capacidad/
 ```
 
 Los servicios de aplicación dependen de interfaces y no conocen las consultas
-SQL. Los detalles de MySQL permanecen en los adaptadores de infraestructura.
+SQL. Los detalles de PostgreSQL permanecen en los adaptadores de infraestructura.
 
 ## Flujo de trabajo Git Flow
 
@@ -297,6 +297,43 @@ multivaluadas. Las restricciones `UNIQUE`, `CHECK`, claves foráneas y reglas
 
 ## Decisiones de diseño
 
+### Persistencia intercambiable: Local Storage y PostgreSQL
+
+La lógica de negocio no conoce el mecanismo de almacenamiento. Los servicios
+dependen de puertos como `UsuarioRepositoryPort`, `PersonaRepositoryPort` y
+`VisitaRepositoryPort`; los adaptadores son los encargados de implementar esos
+contratos.
+
+```text
+                         ┌── Adaptador Local Storage (interfaz web)
+Aplicación → Servicio → Puerto de repositorio
+                         └── Adaptador JDBC PostgreSQL
+```
+
+Por ejemplo, `VisitaService` recibe un `VisitaRepositoryPort` mediante su
+constructor. Las pruebas de los flujos usan una implementación local en memoria
+y ejecutan la misma lógica de pre-registro, aprobación, check-in, check-out y
+regularización que utilizará el adaptador PostgreSQL. El servicio no cambia al
+reemplazar un adaptador por otro.
+
+`localStorage` es una API propia del navegador. Como SICA todavía es una
+aplicación Java sin interfaz web, no se accede a ella desde los servicios Java.
+Cuando se agregue el frontend, su adaptador Local Storage deberá implementar el
+mismo contrato de persistencia en esa capa. Durante las pruebas Java, los
+repositorios en memoria representan ese almacenamiento temporal.
+
+La selección ocurre en el punto de arranque de la aplicación:
+
+```text
+Modo local:       Servicio → RepositoryPort → almacenamiento local temporal
+Modo PostgreSQL:  Servicio → RepositoryPort → adaptador JDBC PostgreSQL
+```
+
+Los adaptadores JDBC PostgreSQL permanecen en `infrastructure`; esta tecnología
+afecta esa capa y la configuración de conexión, no los servicios ni las
+entidades del dominio. Esta separación aplica Arquitectura
+Hexagonal y el principio DIP de SOLID.
+
 ### RBAC almacenado en la base de datos
 
 Los permisos no se determinan mediante condiciones fijas por nombre de rol.
@@ -307,7 +344,7 @@ posee el permiso requerido. Esto permite cambiar autorizaciones desde los datos.
 
 Los servicios registran en `BitacoraAuditoriaPort` después de completar una
 operación crítica. El adaptador agrega fecha, entidad y resultado. Dos triggers
-de MySQL impiden modificar o eliminar los registros históricos.
+de PostgreSQL impiden modificar o eliminar los registros históricos.
 
 ### Estados mediante enumeraciones
 
@@ -345,7 +382,7 @@ pueden trabajar con cualquier implementación de estos contratos.
 
 Clases como `UsuarioRepositoryJdbcAdapter`, `PersonaRepositoryJdbcAdapter` y
 `VisitaRepositoryJdbcAdapter` traducen las operaciones de los puertos a JDBC.
-Este patrón mantiene MySQL fuera de dominio y aplicación.
+Este patrón mantiene PostgreSQL fuera de dominio y aplicación.
 
 ## Instalación
 
@@ -355,8 +392,8 @@ Antes de instalar se necesita:
 
 - JDK 17 o superior.
 - Maven 3.9 o superior.
-- MySQL 8 en ejecución.
-- Un usuario de MySQL con permisos para crear la base y sus tablas.
+- PostgreSQL en ejecución.
+- Un usuario administrador de PostgreSQL para ejecutar la instalación.
 
 ### Configurar la conexión
 
@@ -368,10 +405,10 @@ src/main/java/com/sica/infraestructura/ConexionBD.java
 
 Se deben ajustar estos valores según el entorno local:
 
-```java
-private static final String URL = "jdbc:mysql://localhost:3306/sica_db";
-private static final String USUARIO = "root";
-private static final String PASSWORD = "tu_contrasena";
+```text
+SICA_DB_URL=jdbc:postgresql://localhost:5432/sica_db
+SICA_DB_USER=sica_app
+SICA_DB_PASSWORD=tu_contrasena
 ```
 
 ### Crear la estructura PostgreSQL
@@ -387,9 +424,8 @@ crear tablas, relaciones, restricciones, índices y triggers. Como `schema.sql`
 reconstruye la estructura, no debe ejecutarse sobre datos que se quieran
 conservar.
 
-La conexión Java mostrada arriba todavía corresponde a MySQL y se actualizará
-cuando se implemente el adaptador PostgreSQL. No se deben mezclar esos valores
-de conexión con los nuevos scripts PostgreSQL.
+La aplicación lee estos valores desde variables de entorno y utiliza por
+defecto la URL local y el usuario técnico `sica_app`.
 
 ### Compilar
 

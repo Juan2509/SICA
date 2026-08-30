@@ -12,7 +12,7 @@ import com.sica.infraestructura.ConexionBD;
 
 /**
  * Adaptador de salida (hexagonal): implementa EmpresaRepositoryPort
- * usando JDBC para hablar directamente con MySQL.
+ * usando JDBC para hablar directamente con PostgreSQL.
  */
 public class EmpresaRepositoryJdbcAdapter implements EmpresaRepositoryPort {
 
