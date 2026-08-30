@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            styleClass="app-root">
+    <left>
+        <VBox prefWidth="250" spacing="8" styleClass="sidebar">
+            <padding>
+                <Insets top="34" right="22" bottom="28" left="22"/>
+            </padding>
+            <Label text="SICA" styleClass="sidebar-logo"/>
+            <Label text="ZONA ACME" styleClass="sidebar-company"/>
+            <Region prefHeight="34"/>
+            <Button text="⌂  Inicio" maxWidth="Infinity" styleClass="nav-button-active"/>
+            <Button text="◉  Control de acceso" maxWidth="Infinity" styleClass="nav-button"/>
+            <Button text="▣  Visitas" maxWidth="Infinity" styleClass="nav-button"/>
+            <Button text="⚠  Incidentes" maxWidth="Infinity" styleClass="nav-button"/>
+            <Button text="▤  Reportes" maxWidth="Infinity" styleClass="nav-button"/>
+            <Region VBox.vgrow="ALWAYS"/>
+            <Button text="Cerrar sesión" onAction="#cerrarSesion"
+                    maxWidth="Infinity" styleClass="logout-button"/>
+        </VBox>
+    </left>
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="14" styleClass="topbar">
+            <padding>
+                <Insets top="18" right="28" bottom="18" left="32"/>
+            </padding>
+            <VBox spacing="3">
+                <Label text="Panel principal" styleClass="page-title"/>
+                <Label text="Resumen general del sistema" styleClass="page-subtitle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <VBox alignment="CENTER_RIGHT" spacing="2">
+                <Label fx:id="nombreUsuarioLabel" styleClass="user-name"/>
+                <Label fx:id="rolUsuarioLabel" styleClass="user-role"/>
+            </VBox>
+            <Label fx:id="inicialesLabel" styleClass="avatar"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox spacing="22" styleClass="content-area">
+            <padding>
+                <Insets top="34" right="38" bottom="34" left="38"/>
+            </padding>
+            <Label text="Sesión iniciada correctamente" styleClass="welcome-title"/>
+            <Label text="Selecciona un módulo en el menú lateral para comenzar."
+                   styleClass="welcome-subtitle"/>
+            <HBox spacing="18">
+                <VBox spacing="10" HBox.hgrow="ALWAYS" styleClass="summary-card">
+                    <Label text="CONTROL DE ACCESO" styleClass="card-caption"/>
+                    <Label text="Entradas y salidas" styleClass="card-title"/>
+                    <Label text="Gestiona el ingreso seguro al complejo."
+                           wrapText="true" styleClass="card-description"/>
+                </VBox>
+                <VBox spacing="10" HBox.hgrow="ALWAYS" styleClass="summary-card">
+                    <Label text="SOLICITUDES" styleClass="card-caption"/>
+                    <Label text="Aprobaciones" styleClass="card-title"/>
+                    <Label text="Consulta las solicitudes que requieren atención."
+                           wrapText="true" styleClass="card-description"/>
+                </VBox>
+                <VBox spacing="10" HBox.hgrow="ALWAYS" styleClass="summary-card">
+                    <Label text="AUDITORÍA" styleClass="card-caption"/>
+                    <Label text="Trazabilidad" styleClass="card-title"/>
+                    <Label text="Revisa las acciones registradas por SICA."
+                           wrapText="true" styleClass="card-description"/>
+                </VBox>
+            </HBox>
+            <VBox spacing="10" styleClass="info-panel">
+                <Label text="Interfaz inicial de SICA" styleClass="info-title"/>
+                <Label text="Los módulos se habilitarán progresivamente según el rol y los permisos almacenados en PostgreSQL."
+                       wrapText="true" styleClass="info-text"/>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

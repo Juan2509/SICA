@@ -1,7 +1,9 @@
 package com.sica;
 
+import com.sica.presentacion.SicaApplication;
+
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        SicaApplication.main(args);
     }
 }

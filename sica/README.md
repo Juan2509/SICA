@@ -153,9 +153,34 @@ database/
 │   └── 01_roles_permissions.sql
 ├── tcl/
 │   └── 01_transactions.sql
+├── tests/
+│   └── 01_integrity_transactions.sql
 └── diagrams/
     └── modelo-er.md
 ```
+
+Las restricciones y transacciones se validan después de cargar los datos con:
+
+```bash
+psql -U postgres -d sica_db -f database/tests/01_integrity_transactions.sql
+```
+
+La prueba comprueba FK inexistente, PK duplicada, campos `NULL`, valores fuera
+de los estados permitidos, documentos duplicados, `ROLLBACK`, `COMMIT` y
+`SAVEPOINT`. Los datos temporales utilizados por la prueba se eliminan al
+finalizar.
+
+La integración de Java con la base real se comprueba desde una terminal que
+tenga definidas `SICA_DB_URL`, `SICA_DB_USER` y `SICA_DB_PASSWORD`:
+
+```bash
+mvn -Dtest=PostgresqlIntegracionTest test
+```
+
+Esta prueba verifica la conexión con `sica_app`, login exitoso y fallido, RBAC,
+consulta de una visita y escritura/lectura de auditoría. Si no se define
+`SICA_DB_PASSWORD`, JUnit la omite para que las pruebas unitarias puedan
+ejecutarse sin depender de una instalación local.
 
 ### Transacciones PostgreSQL (TCL)
 
@@ -434,6 +459,23 @@ Desde la carpeta que contiene `pom.xml`:
 ```bash
 mvn clean compile
 ```
+
+### Ejecutar la interfaz JavaFX
+
+Con PostgreSQL activo y las variables `SICA_DB_URL`, `SICA_DB_USER` y
+`SICA_DB_PASSWORD` definidas en la terminal:
+
+```bash
+mvn javafx:run
+```
+
+SICA abre una ventana de inicio de sesión construida con JavaFX, FXML y CSS.
+Las credenciales se validan mediante `LoginService` y PostgreSQL; no se utiliza
+la terminal ni `JOptionPane` como interfaz. Después de autenticarse se muestra
+un panel principal básico con el nombre y rol del usuario.
+
+La capa visual vive en `com.sica.presentacion`. Sus controladores llaman a los
+servicios y puertos existentes, pero no contienen SQL ni reglas de negocio.
 
 Para generar el paquete:
 
