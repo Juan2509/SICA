@@ -452,6 +452,12 @@ conservar.
 La aplicación lee estos valores desde variables de entorno y utiliza por
 defecto la URL local y el usuario técnico `sica_app`.
 
+Si `SICA_DB_PASSWORD` no está definida, la interfaz abre automáticamente la
+pantalla **Conexión con PostgreSQL**. La configuración validada se guarda en
+el perfil local del usuario, en `~/.sica/conexion.properties`, fuera del
+repositorio. Las variables de entorno, cuando existen, tienen prioridad sobre
+ese archivo local.
+
 ### Compilar
 
 Desde la carpeta que contiene `pom.xml`:

@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Ejecutar SICA",
+            "request": "launch",
+            "mainClass": "com.sica.Main",
+            "projectName": "sica",
+            "cwd": "${workspaceFolder}/sica",
+            "console": "integratedTerminal"
+        }
+    ]
+}

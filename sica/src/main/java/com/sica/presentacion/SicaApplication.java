@@ -20,6 +20,7 @@ import com.sica.incidente.application.IncidenteService;
 import com.sica.incidente.infrastructure.IncidenteRepositoryJdbcAdapter;
 import com.sica.auditoria.application.AuditoriaService;
 import com.sica.reporte.application.ReporteService;
+import com.sica.infraestructura.ConexionBD;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
@@ -47,7 +48,8 @@ public class SicaApplication extends Application {
         Navegador navegador = new Navegador(stage, loginService, roles,
                 personaService, empresaService, visitaService, incidenteService,
                 auditoriaService, reporteService);
-        navegador.mostrarLogin();
+        if (ConexionBD.faltaConfiguracion()) navegador.mostrarConfiguracionBD();
+        else navegador.mostrarLogin();
     }
 
     public static void main(String[] args) {

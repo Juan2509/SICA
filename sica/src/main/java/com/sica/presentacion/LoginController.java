@@ -4,6 +4,7 @@ import com.sica.autenticacion.application.LoginService;
 import com.sica.autenticacion.application.exception.CredencialesInvalidasException;
 import com.sica.rol.application.port.RolRepositoryPort;
 import com.sica.usuario.domain.Usuario;
+import com.sica.infraestructura.ConexionBD;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -58,10 +59,15 @@ public class LoginController {
             passwordField.clear();
             mostrarError(e.getMessage());
         } catch (RuntimeException e) {
-            mostrarError("No fue posible conectar con SICA. Revisa PostgreSQL.");
+            mostrarError(ConexionBD.explicarError(e));
         } finally {
             ingresarButton.setDisable(false);
         }
+    }
+
+    @FXML
+    private void configurarConexion() {
+        navegador.mostrarConfiguracionBD();
     }
 
     private void limpiarMensaje() {

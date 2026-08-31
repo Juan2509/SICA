@@ -52,6 +52,12 @@ public class Navegador {
         mostrarPantalla("login.fxml", controller, "SICA | Inicio de sesión", 940, 600);
     }
 
+    public void mostrarConfiguracionBD() {
+        ConfiguracionBDController controller = new ConfiguracionBDController(this);
+        mostrarPantalla("configuracion-bd.fxml", controller,
+                "SICA | Configuracion de PostgreSQL", 720, 570);
+    }
+
     public void mostrarPanel(Usuario usuario, String nombreRol) {
         PanelPrincipalController controller = new PanelPrincipalController(
                 usuario, nombreRol, rolRepository, this);

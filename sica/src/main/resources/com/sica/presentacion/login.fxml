@@ -51,6 +51,8 @@
             <Button fx:id="ingresarButton" text="INICIAR SESIÓN"
                     onAction="#iniciarSesion" maxWidth="Infinity"
                     defaultButton="true" styleClass="primary-button"/>
+            <Button text="Configurar conexión PostgreSQL" onAction="#configurarConexion"
+                    maxWidth="Infinity" styleClass="secondary-button"/>
             <Region VBox.vgrow="ALWAYS"/>
             <Label text="Acceso exclusivo para personal autorizado"
                    styleClass="form-footer"/>

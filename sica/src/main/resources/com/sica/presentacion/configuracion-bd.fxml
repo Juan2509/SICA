@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" styleClass="login-root">
+    <padding><Insets top="38" right="65" bottom="38" left="65"/></padding>
+    <VBox maxWidth="560" spacing="12" styleClass="form-card">
+        <Label text="Conexion con PostgreSQL" styleClass="form-title"/>
+        <Label text="Esta configuracion pertenece solamente a este equipo y no se guarda en el repositorio."
+               wrapText="true" styleClass="form-subtitle"/>
+        <Label text="URL de la base" styleClass="field-label"/>
+        <TextField fx:id="urlField" promptText="jdbc:postgresql://localhost:5432/sica_db" styleClass="login-field"/>
+        <Label text="Usuario tecnico" styleClass="field-label"/>
+        <TextField fx:id="usuarioField" promptText="sica_app" styleClass="login-field"/>
+        <Label text="Contrasena tecnica de PostgreSQL" styleClass="field-label"/>
+        <PasswordField fx:id="passwordField" promptText="Contrasena asignada a sica_app"
+                       onAction="#guardarYContinuar" styleClass="login-field"/>
+        <Label fx:id="mensajeLabel" visible="false" wrapText="true" styleClass="error-label"/>
+        <Button text="PROBAR, GUARDAR Y CONTINUAR" onAction="#guardarYContinuar"
+                defaultButton="true" maxWidth="Infinity" styleClass="primary-button"/>
+        <Button text="Volver al inicio de sesion" onAction="#volver"
+                maxWidth="Infinity" styleClass="secondary-button"/>
+    </VBox>
+</StackPane>
