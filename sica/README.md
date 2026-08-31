@@ -2,646 +2,389 @@
 
 Sistema Integrado de Control de Acceso para el complejo empresarial Zona Acme.
 
+## Autor
+
+Juan José Ricardo Rangel Sandoval
+
 ## Descripción
 
-SICA es un proyecto Java que administra usuarios, personas, empresas, visitas,
-solicitudes de aprobación, accesos, incidentes, auditoría y reportes. Su objetivo
-es reemplazar el registro manual de entradas y salidas por información
-centralizada, consultable y protegida mediante roles y permisos.
+SICA es una aplicación de escritorio desarrollada en Java para sustituir el
+registro manual de entradas y salidas de Zona Acme. Centraliza usuarios,
+empresas, personas, visitas, solicitudes, incidentes y auditoría en PostgreSQL,
+y proporciona una interfaz JavaFX adaptada a los permisos del usuario.
+
+El proyecto tiene un alcance académico y favorece soluciones claras y
+mantenibles, Arquitectura Hexagonal, Vertical Slices, RBAC, principios SOLID y
+separación entre la lógica de negocio y la infraestructura.
 
 ## Problema
 
-Zona Acme reúne a más de 30 empresas, pero su control de acceso se realizaba con
-libros de papel y comunicación por radio. Esto ocasionaba filas, información
-ilegible, dificultad para conocer quién permanecía dentro y poca trazabilidad
-ante incidentes. Tampoco existía una forma centralizada de restringir personas o
-autorizar visitantes no anunciados.
+El control basado en libros de papel y comunicación por radio provoca filas,
+registros ilegibles y poca trazabilidad. También dificulta conocer quién está
+dentro, autorizar una visita en tiempo real, restringir el acceso e investigar
+posteriormente un incidente.
 
-## Solución
+## Objetivo general
 
-SICA centraliza los datos en PostgreSQL y aplica las siguientes reglas:
+Automatizar y asegurar el control de acceso de Zona Acme mediante una aplicación
+capaz de identificar personas, autorizar visitas, registrar entradas y salidas,
+regularizar inconsistencias y conservar evidencia auditable.
 
-- Autorización RBAC mediante roles y permisos almacenados en la base de datos.
-- Pre-registro y consulta de visitas.
-- Check-in y check-out con identificación del guarda responsable.
-- Aprobación o rechazo de visitantes no anunciados.
-- Autorización excepcional para trabajadores que olvidan el carnet.
-- Regularización automática de salidas olvidadas.
-- Restricción o habilitación del acceso de personas.
-- Registro de incidentes de seguridad.
-- Bitácora inmutable para las operaciones críticas.
-- Reportes de visitas y consulta de trazabilidad.
+## Objetivos específicos
 
-## Tecnologías
+- Autenticar usuarios y limitar sus acciones mediante roles y permisos.
+- Gestionar usuarios, personas, empresas, visitas e incidentes.
+- Permitir pre-registros y solicitudes de aprobación en tiempo real.
+- Registrar check-in y check-out solamente si el acceso está autorizado.
+- Detectar y regularizar salidas olvidadas sin bloquear el nuevo ingreso.
+- Consultar las personas que permanecen dentro del complejo.
+- Mantener una bitácora de auditoría inmutable.
+- Generar reportes para usuarios autorizados.
+- Mantener el negocio independiente de PostgreSQL y JavaFX.
+- Proporcionar una instalación reproducible mediante Docker.
 
-- Java 17.
-- Maven.
-- PostgreSQL.
-- JDBC.
-- PostgreSQL JDBC Driver 42.7.7.
+## Funcionalidades
 
-## Arquitectura y organización
+### Seguridad y RBAC
 
-El proyecto aplica Arquitectura Hexagonal y Vertical Slices. Cada capacidad se
-organiza en su propio paquete, por ejemplo `persona`, `visita`, `incidente` o
-`auditoria`.
+- Inicio de sesión con registro de intentos exitosos y fallidos.
+- Roles `ADMINISTRADOR`, `GUARDA_SEGURIDAD` y `FUNCIONARIO`.
+- Permisos configurables desde PostgreSQL.
+- Menú JavaFX dinámico según los permisos del usuario autenticado.
+- Mensajes claros cuando una operación no está autorizada.
 
-Dentro de cada capacidad se utilizan, cuando corresponden, estas capas:
+### Personas, empresas y usuarios
+
+- Creación, consulta, actualización y eliminación de usuarios.
+- Consulta y asociación de roles y permisos.
+- Gestión de personas, empresas y URL de fotografía.
+- Identificación mediante documento.
+- Estado de acceso habilitado o restringido.
+
+### Visitas y control de acceso
+
+- Pre-registro de invitados con estado `APROBADO`.
+- Consulta de visitante, anfitrión, fotografía y autorización.
+- Check-in, check-out y consulta de personas dentro.
+- Bloqueo del ingreso cuando la visita está pendiente o rechazada.
+- Registro del usuario responsable de la entrada y la salida.
+
+### Solicitudes de aprobación
+
+- Registro de invitados no anunciados.
+- Solicitud excepcional para trabajadores sin carnet.
+- Aprobación o rechazo por el funcionario correspondiente.
+- Actualización automática de la pantalla cada cuatro segundos.
+
+### Salidas olvidadas
+
+Cuando una persona con una visita en estado `DENTRO` vuelve a ingresar, SICA:
+
+1. Detecta la visita abierta.
+2. La cierra como `CERRADA_POR_SISTEMA`.
+3. Registra la salida con usuario `SISTEMA`.
+4. Crea una nueva visita.
+5. Permite continuar con el ingreso.
+6. Registra la regularización en auditoría.
+
+### Incidentes, auditoría y reportes
+
+- Registro de incidentes con fecha, descripción y persona opcional.
+- Auditoría de login, usuarios, personas, empresas, incidentes y accesos.
+- Bitácora protegida contra actualizaciones y eliminaciones normales.
+- Consulta de usuario, acción, entidad, fecha y resultado.
+- Reportes de visitas para usuarios con `generar_reporte`.
+
+## Tecnologías utilizadas
+
+| Tecnología | Uso |
+|---|---|
+| Java 17 | Lenguaje y lógica del sistema |
+| JavaFX 17 | Interfaz gráfica de escritorio |
+| FXML y CSS | Vistas y tema visual |
+| Maven 3.9 | Dependencias, compilación, pruebas y ejecución |
+| PostgreSQL 17 | Persistencia relacional |
+| JDBC 42.7.7 | Comunicación entre Java y PostgreSQL |
+| JUnit 5 | Pruebas unitarias y de integración |
+| Docker Compose | PostgreSQL reproducible en diferentes equipos |
+| Git y Git Flow | Control de versiones y organización de ramas |
+
+## Arquitectura
+
+SICA utiliza Arquitectura Hexagonal organizada mediante Vertical Slices. Cada
+capacidad contiene sus propias clases de dominio, aplicación e infraestructura.
 
 ```text
-capacidad/
+com.sica/
+├── autenticacion/    Inicio de sesión
+├── autorizacion/     Verificación de permisos
+├── usuario/          Usuarios del sistema
+├── rol/              Roles y permisos
+├── persona/          Trabajadores e invitados
+├── empresa/          Empresas de Zona Acme
+├── visita/           Visitas, accesos y solicitudes
+├── incidente/        Incidentes de seguridad
+├── auditoria/        Bitácora y trazabilidad
+├── reporte/          Reportes
+├── infraestructura/  Conexión compartida
+└── presentacion/     JavaFX, FXML y navegación
+```
+
+Estructura habitual de una capacidad:
+
+```text
+modulo/
 ├── domain/          Entidades y estados del negocio
-├── application/     Casos de uso, DTO, excepciones y puertos
+├── application/     Servicios, DTO, puertos y excepciones
 └── infrastructure/  Adaptadores JDBC
 ```
 
-Los servicios de aplicación dependen de interfaces y no conocen las consultas
-SQL. Los detalles de PostgreSQL permanecen en los adaptadores de infraestructura.
-
-## Flujo de trabajo Git Flow
-
-El repositorio utiliza un flujo de ramas basado en Git Flow:
-
-- `main`: contiene versiones estables listas para entrega.
-- `develop`: integra el trabajo terminado de las diferentes funcionalidades.
-- `feature/*`: se crea desde `develop` para desarrollar una historia de usuario.
-- `release/*`: se crea desde `develop` para preparar una versión; al finalizar
-  se integra en `main` y `develop`.
-- `hotfix/*`: se crea desde `main` para corregir un problema urgente; al
-  finalizar se integra en `main` y `develop`.
-
-Flujo utilizado para una historia:
+El sentido de las dependencias es:
 
 ```text
-develop
-└── feature/e10-hu04-patrones
-    └── merge hacia develop al terminar y verificar la historia
+JavaFX -> Servicios de aplicación -> Puertos <- Adaptadores PostgreSQL
 ```
 
-Las ramas `release/*` y `hotfix/*` solo deben crearse cuando exista una
-liberación o una corrección urgente real. No se mantienen ramas vacías para
-simular su utilización.
+Los servicios no contienen SQL y los adaptadores no deciden reglas de negocio.
 
-## Modelo entidad-relación
+## Principios y patrones
 
-El siguiente diagrama representa el modelo PostgreSQL oficial definido en
-`schema.sql`.
+- SRP: servicios, controladores, entidades y repositorios tienen tareas separadas.
+- OCP: nuevos adaptadores pueden implementar los puertos existentes.
+- LSP: adaptadores JDBC y repositorios de prueba respetan los mismos contratos.
+- ISP: los puertos se dividen por capacidad.
+- DIP: los servicios dependen de interfaces y no de JDBC.
+- Repository: los puertos representan repositorios de cada agregado.
+- Adapter: JDBC implementa los puertos sin modificar el negocio.
+- MVC: FXML representa la vista y los controladores coordinan servicios.
+- Streams y lambda: se utilizan para filtrar y transformar colecciones.
 
-Para crear la base y toda su estructura desde cero con PostgreSQL se utiliza:
+## Base de datos
 
-```bash
-psql -U postgres -f ddl_postgresql.sql
-```
+El modelo PostgreSQL está normalizado hasta Cuarta Forma Normal cuando existen
+relaciones multivaluadas independientes. Roles y permisos se relacionan mediante
+`rol_permiso`, sin guardar listas dentro de columnas.
 
-`ddl_postgresql.sql` crea `sica_db`, se conecta y carga `schema.sql`. El esquema
-es un script de reconstrucción: utiliza
-`DROP TABLE IF EXISTS` antes de crear las tablas, por lo que elimina los datos
-anteriores. No debe ejecutarse sobre una base que se quiera conservar.
-
-Después de crear la estructura, los datos iniciales oficiales se cargan con:
-
-```bash
-psql -U postgres -d sica_db -f data.sql
-```
-
-`data.sql` se ejecuta dentro de una transacción e incluye roles, permisos,
-RBAC, usuarios de prueba, empresas, personas, auditoría y visitas para los
-flujos principales. El archivo complementario `dml_postgresql.sql` conserva
-ejemplos controlados de `INSERT`, `UPDATE`, `DELETE` y consultas `SELECT`.
-
-### Privilegios PostgreSQL (DCL)
-
-Después del DDL se configura la cuenta técnica de la aplicación con:
-
-```bash
-psql -U postgres -d sica_db -f dcl_postgresql.sql
-```
-
-El script solicita de forma segura una contraseña para `sica_app`; no se guarda
-ninguna contraseña PostgreSQL en el repositorio. Esta cuenta no es superusuario
-y no puede crear bases de datos, roles ni tablas. Puede consultar las tablas,
-modificar los datos operativos e insertar registros de auditoría, pero no puede
-actualizar ni eliminar la bitácora.
-
-Los niveles de autorización no se mezclan:
-
-- **RBAC de SICA:** las tablas `roles`, `permisos` y `rol_permiso` determinan
-  qué acciones funcionales puede realizar una persona dentro de la aplicación.
-- **DCL de PostgreSQL:** `sica_aplicacion` y `sica_app` determinan qué comandos
-  puede ejecutar técnicamente la conexión Java sobre la base de datos.
-
-La aplicación deberá conectarse con `sica_app`. La cuenta administrativa
-`postgres` se reserva para ejecutar scripts de instalación y mantenimiento.
-
-### Organización de scripts SQL
-
-Los entregables obligatorios `schema.sql` y `data.sql` permanecen en la raíz de
-`sica`. La carpeta `database/` organiza puntos de entrada por responsabilidad;
-estos reutilizan las fuentes oficiales con `\ir`, por lo que no se mantienen
-copias independientes que puedan quedar desactualizadas.
-
-```text
-database/
-├── schema.sql
-├── data.sql
-├── ddl/
-│   └── 01_create_database.sql
-├── dml/
-│   ├── 01_seed_data.sql
-│   └── 02_operations_examples.sql
-├── dcl/
-│   └── 01_roles_permissions.sql
-├── tcl/
-│   └── 01_transactions.sql
-├── tests/
-│   └── 01_integrity_transactions.sql
-└── diagrams/
-    └── modelo-er.md
-```
-
-Las restricciones y transacciones se validan después de cargar los datos con:
-
-```bash
-psql -U postgres -d sica_db -f database/tests/01_integrity_transactions.sql
-```
-
-La prueba comprueba FK inexistente, PK duplicada, campos `NULL`, valores fuera
-de los estados permitidos, documentos duplicados, `ROLLBACK`, `COMMIT` y
-`SAVEPOINT`. Los datos temporales utilizados por la prueba se eliminan al
-finalizar.
-
-La integración de Java con la base real se comprueba desde una terminal que
-tenga definidas `SICA_DB_URL`, `SICA_DB_USER` y `SICA_DB_PASSWORD`:
-
-```bash
-mvn -Dtest=PostgresqlIntegracionTest test
-```
-
-Esta prueba verifica la conexión con `sica_app`, login exitoso y fallido, RBAC,
-consulta de una visita y escritura/lectura de auditoría. Si no se define
-`SICA_DB_PASSWORD`, JUnit la omite para que las pruebas unitarias puedan
-ejecutarse sin depender de una instalación local.
-
-### Transacciones PostgreSQL (TCL)
-
-El flujo transaccional de salida olvidada se prueba con:
-
-```bash
-psql -U postgres -d sica_db -f tcl_postgresql.sql
-```
-
-El script utiliza `BEGIN`, `SAVEPOINT`, `COMMIT`, `ROLLBACK TO SAVEPOINT` y
-`ROLLBACK`. La regularización bloquea la visita abierta con `FOR UPDATE`, cierra
-la visita anterior, crea el nuevo ingreso y registra la auditoría como una sola
-unidad. Si el proceso falla antes del `COMMIT`, la transacción puede revertirse
-sin dejar una visita cerrada sin su nuevo registro.
-
-El mismo archivo incluye una segunda transacción de prueba que cambia
-temporalmente un estado de acceso y luego ejecuta `ROLLBACK`; por lo tanto, ese
-cambio no permanece en la base.
+### Modelo entidad-relación
 
 ```mermaid
 erDiagram
-    ROLES {
-        BIGINT id PK
-        VARCHAR nombre UK
-    }
-
-    PERMISOS {
-        BIGINT id PK
-        VARCHAR nombre UK
-    }
-
-    ROL_PERMISO {
-        BIGINT rol_id PK, FK
-        BIGINT permiso_id PK, FK
-    }
-
-    USUARIOS {
-        BIGINT id PK
-        BIGINT persona_id FK, UK
-        VARCHAR username UK
-        VARCHAR password
-        BIGINT rol_id FK
-        BOOLEAN activo
-    }
-
-    EMPRESAS {
-        BIGINT id PK
-        VARCHAR nombre
-        VARCHAR identificador UK
-    }
-
-    PERSONAS {
-        BIGINT id PK
-        VARCHAR nombre
-        VARCHAR documento UK
-        VARCHAR tipo
-        BIGINT empresa_id FK
-        VARCHAR foto_url
-        VARCHAR estado_acceso
-    }
-
-    VISITAS {
-        BIGINT id PK
-        BIGINT invitado_id FK
-        BIGINT persona_visitada_id FK
-        TIMESTAMPTZ fecha_hora_visita
-        VARCHAR estado
-        TIMESTAMPTZ fecha_hora_checkin
-        VARCHAR usuario_checkin
-        TIMESTAMPTZ fecha_hora_checkout
-        VARCHAR usuario_checkout
-    }
-
-    INCIDENTES {
-        BIGINT id PK
-        VARCHAR descripcion
-        TIMESTAMPTZ fecha_hora
-        BIGINT persona_id FK
-        VARCHAR usuario_responsable
-    }
-
-    BITACORA_AUDITORIA {
-        BIGINT id PK
-        VARCHAR accion
-        VARCHAR entidad
-        VARCHAR descripcion
-        VARCHAR usuario_responsable
-        TIMESTAMPTZ fecha
-        VARCHAR resultado
-    }
-
     ROLES ||--o{ USUARIOS : asigna
-    PERSONAS ||--o| USUARIOS : posee
     ROLES ||--o{ ROL_PERMISO : contiene
-    PERMISOS ||--o{ ROL_PERMISO : pertenece
-    EMPRESAS o|--o{ PERSONAS : agrupa
-    PERSONAS ||--o{ VISITAS : realiza
-    PERSONAS ||--o{ VISITAS : recibe
-    PERSONAS o|--o{ INCIDENTES : involucra
+    PERMISOS ||--o{ ROL_PERMISO : integra
+    PERSONAS ||--o| USUARIOS : posee
+    EMPRESAS ||--o{ PERSONAS : vincula
+    PERSONAS ||--o{ VISITAS : visitante
+    PERSONAS ||--o{ VISITAS : anfitrion
+    PERSONAS ||--o{ INCIDENTES : relacionada
 ```
 
-Una persona puede pertenecer a una empresa. Cada visita referencia a la persona
-que ingresa y a la persona visitada. Un incidente puede asociarse opcionalmente
-a una persona. La bitácora conserva el responsable como texto para mantener su
-identidad histórica aunque un usuario sea eliminado.
+La definición exacta y vigente se encuentra en `schema.sql`.
 
-### Normalización hasta Cuarta Forma Normal
-
-El modelo PostgreSQL cumple las formas normales de la siguiente manera:
-
-- **1FN:** cada columna contiene un valor atómico. No se guardan listas de
-  permisos, empresas o visitas dentro de una columna.
-- **2FN:** las tablas con una clave de una sola columna dependen completamente
-  de esa clave. En `rol_permiso`, que tiene clave compuesta, no existen datos
-  adicionales que dependan solo de `rol_id` o solo de `permiso_id`.
-- **3FN:** los datos descriptivos dependen de la entidad a la que pertenecen.
-  `usuarios` ya no repite nombre y documento: utiliza `persona_id`, mientras
-  `personas` conserva esos datos una única vez. Así se evita que el documento o
-  nombre de una cuenta sea diferente al de su persona.
-- **4FN:** la relación multivaluada independiente rol-permiso se representa con
-  `rol_permiso`. Cada fila asocia un solo rol con un solo permiso, permitiendo
-  agregar o retirar permisos sin modificar la tabla `roles`.
-
-Dependencias resueltas:
-
-- La dependencia parcial de una posible relación rol-permiso se eliminó con la
-  clave compuesta `(rol_id, permiso_id)` y sin atributos dependientes de una
-  sola parte.
-- La duplicación transitiva `usuario -> documento -> datos personales` se
-  eliminó mediante la relación única `usuarios.persona_id -> personas.id`.
-- La dependencia multivaluada `rol ->> permiso` quedó separada en
-  `rol_permiso`.
-
-Los nombres de usuario guardados en visitas, incidentes y bitácora son una
-instantánea histórica deliberada: permiten conservar quién ejecutó una acción
-aunque la cuenta cambie posteriormente. No representan listas ni dependencias
-multivaluadas. Las restricciones `UNIQUE`, `CHECK`, claves foráneas y reglas
-`ON DELETE` evitan duplicados y referencias inconsistentes.
-
-## Decisiones de diseño
-
-### Persistencia intercambiable: Local Storage y PostgreSQL
-
-La lógica de negocio no conoce el mecanismo de almacenamiento. Los servicios
-dependen de puertos como `UsuarioRepositoryPort`, `PersonaRepositoryPort` y
-`VisitaRepositoryPort`; los adaptadores son los encargados de implementar esos
-contratos.
+### Scripts disponibles
 
 ```text
-                         ┌── Adaptador Local Storage (interfaz web)
-Aplicación → Servicio → Puerto de repositorio
-                         └── Adaptador JDBC PostgreSQL
+sica/
+├── schema.sql                 Estructura completa obligatoria
+├── data.sql                   Datos iniciales obligatorios
+├── ddl_postgresql.sql         Creación y carga del esquema
+├── dml_postgresql.sql         Operaciones DML
+├── dcl_postgresql.sql         Roles y privilegios PostgreSQL
+├── tcl_postgresql.sql         Transacciones
+└── database/
+    ├── schema.sql
+    ├── data.sql
+    ├── ddl/
+    ├── dml/
+    ├── dcl/
+    ├── tcl/
+    ├── tests/
+    └── diagrams/
 ```
 
-Por ejemplo, `VisitaService` recibe un `VisitaRepositoryPort` mediante su
-constructor. Las pruebas de los flujos usan una implementación local en memoria
-y ejecutan la misma lógica de pre-registro, aprobación, check-in, check-out y
-regularización que utilizará el adaptador PostgreSQL. El servicio no cambia al
-reemplazar un adaptador por otro.
+Los archivos dentro de `database/` cumplen la separación por responsabilidad.
+`schema.sql` y `data.sql` permanecen también en la raíz de `sica` porque son
+entregables obligatorios.
 
-`localStorage` es una API propia del navegador. Como SICA todavía es una
-aplicación Java sin interfaz web, no se accede a ella desde los servicios Java.
-Cuando se agregue el frontend, su adaptador Local Storage deberá implementar el
-mismo contrato de persistencia en esa capa. Durante las pruebas Java, los
-repositorios en memoria representan ese almacenamiento temporal.
+## Requisitos
 
-La selección ocurre en el punto de arranque de la aplicación:
+### Ejecución recomendada
 
-```text
-Modo local:       Servicio → RepositoryPort → almacenamiento local temporal
-Modo PostgreSQL:  Servicio → RepositoryPort → adaptador JDBC PostgreSQL
-```
+- Windows 10 u 11.
+- Docker Desktop instalado y abierto.
+- Java JDK 17 o superior.
+- Maven 3.9 o superior.
 
-Los adaptadores JDBC PostgreSQL permanecen en `infrastructure`; esta tecnología
-afecta esa capa y la configuración de conexión, no los servicios ni las
-entidades del dominio. Esta separación aplica Arquitectura
-Hexagonal y el principio DIP de SOLID.
+### Ejecución manual
 
-### RBAC almacenado en la base de datos
+- Java JDK 17 o superior.
+- Maven 3.9 o superior.
+- PostgreSQL 17 o compatible.
+- Cliente `psql` disponible en `PATH`.
 
-Los permisos no se determinan mediante condiciones fijas por nombre de rol.
-`AutorizacionService` busca el usuario y consulta en `rol_permiso` si su rol
-posee el permiso requerido. Esto permite cambiar autorizaciones desde los datos.
-
-### Auditoría desde la capa de aplicación
-
-Los servicios registran en `BitacoraAuditoriaPort` después de completar una
-operación crítica. El adaptador agrega fecha, entidad y resultado. Dos triggers
-de PostgreSQL impiden modificar o eliminar los registros históricos.
-
-### Estados mediante enumeraciones
-
-`EstadoVisita` y `EstadoAcceso` representan valores permitidos en el código y
-evitan utilizar textos diferentes para una misma regla de negocio.
-
-### JDBC aislado en infraestructura
-
-Las conexiones, sentencias SQL y `ResultSet` se utilizan solamente en
-`infrastructure`. El dominio y los servicios no dependen de JDBC.
-
-## Principios SOLID
-
-- **SRP:** cada servicio administra una capacidad y cada adaptador se ocupa de
-  persistencia.
-- **OCP:** puede agregarse otro adaptador implementando un puerto sin modificar
-  los servicios.
-- **LSP:** cualquier implementación que respete un puerto puede sustituir al
-  adaptador JDBC correspondiente.
-- **ISP:** existen puertos específicos por capacidad. Auditoría separa escritura
-  (`BitacoraAuditoriaPort`) y consulta (`BitacoraConsultaPort`).
-- **DIP:** los servicios reciben los puertos mediante sus constructores y no
-  crean adaptadores concretos.
-
-## Patrones de diseño
-
-### Repository
-
-Interfaces como `UsuarioRepositoryPort`, `PersonaRepositoryPort`,
-`VisitaRepositoryPort` e `IncidenteRepositoryPort` representan las operaciones
-de persistencia que necesita la aplicación. Los servicios no contienen SQL y
-pueden trabajar con cualquier implementación de estos contratos.
-
-### Adapter
-
-Clases como `UsuarioRepositoryJdbcAdapter`, `PersonaRepositoryJdbcAdapter` y
-`VisitaRepositoryJdbcAdapter` traducen las operaciones de los puertos a JDBC.
-Este patrón mantiene PostgreSQL fuera de dominio y aplicación.
-
-## Instalación
-
-### Inicio recomendado con Docker
-
-Esta es la forma recomendada de ejecutar SICA en otro equipo. Docker reemplaza
-la instalación manual de PostgreSQL y reconstruye automáticamente la base de
-datos. Para ejecutar el código fuente todavía se necesita un JDK y VS Code (o
-Maven); no es necesario instalar PostgreSQL ni ejecutar scripts SQL a mano.
-
-Requisitos:
-
-- Docker Desktop iniciado.
-- JDK 17 o superior.
-- VS Code con la extensión Java, si se ejecutará `Main.java` desde el editor.
-
-Procedimiento desde cero:
-
-1. Descargar o clonar la carpeta completa `SICA`.
-2. Abrir Docker Desktop y esperar a que indique que está funcionando.
-3. Abrir en VS Code la carpeta raíz `SICA`, no solamente la subcarpeta `sica`.
-4. Abrir **Ejecutar y depurar** (`Ctrl + Shift + D`).
-5. Seleccionar **Ejecutar SICA** y presionar el botón verde.
-
-La configuración de VS Code ejecuta automáticamente `iniciar-sica.ps1` antes
-de Java. El script realiza estas acciones:
-
-1. Genera contraseñas locales aleatorias durante el primer inicio.
-2. Guarda esas contraseñas en `.env`, archivo excluido de Git.
-3. Crea la configuración JDBC en `%USERPROFILE%\.sica\conexion.properties`.
-4. Inicia `postgres:17-alpine` con Docker Compose.
-5. Espera a que PostgreSQL esté saludable.
-6. Docker ejecuta `schema.sql`, `data.sql` y los privilegios DCL.
-7. VS Code inicia `com.sica.Main`.
-
-También se puede preparar la base haciendo doble clic en:
-
-```text
-iniciar-sica.cmd
-```
-
-Después se ejecuta la configuración **Ejecutar SICA** en VS Code. La base del
-contenedor queda disponible solamente en este equipo mediante:
-
-```text
-jdbc:postgresql://localhost:5433/sica_db
-```
-
-Se utiliza el puerto `5433` para no entrar en conflicto con una instalación
-local de PostgreSQL que ya utilice `5432`.
-
-Comandos útiles desde la carpeta raíz `SICA`:
+Comprobar herramientas:
 
 ```powershell
-# Consultar el estado
-docker compose ps
-
-# Consultar los mensajes de PostgreSQL
-docker compose logs postgres
-
-# Detener SICA conservando los datos
-docker compose down
-
-# Iniciar otra vez conservando los datos
-docker compose up -d --wait
+java -version
+mvn -version
+docker --version
+docker compose version
 ```
 
-Para reconstruir completamente la base con los datos iniciales se debe borrar
-el volumen. **Este comando elimina todos los datos creados durante las pruebas:**
+## Ejecutar en Windows con Docker
+
+1. Descargar o clonar el proyecto.
+2. Abrir Docker Desktop.
+3. Abrir PowerShell en la raíz del repositorio.
+4. Ejecutar:
 
 ```powershell
-docker compose down -v
 .\iniciar-sica.ps1
 ```
 
-Los archivos de `docker-entrypoint-initdb.d` se ejecutan únicamente cuando el
-volumen de PostgreSQL está vacío. Por eso modificar `schema.sql` o `data.sql`
-no altera automáticamente una base que ya fue inicializada.
+También puede utilizarse:
 
-Credenciales funcionales después del primer inicio:
-
-```text
-Administrador: admin / admin123
-Guarda:        guarda / guarda123
-Funcionario:   funcionario / funcionario123
+```cmd
+iniciar-sica.cmd
 ```
 
-Los valores de `.env` son credenciales técnicas locales de PostgreSQL y no son
-las contraseñas utilizadas en la pantalla de inicio de sesión de SICA. No se
-debe subir `.env` al repositorio ni compartir su contenido.
+El script:
 
-### Instalación manual sin Docker (alternativa)
+- Genera contraseñas locales en `.env` si no existen.
+- Crea `%USERPROFILE%\.sica\conexion.properties`.
+- Inicia PostgreSQL en Docker.
+- Ejecuta `schema.sql`, `data.sql` y la configuración DCL.
+- Espera hasta que PostgreSQL esté disponible.
 
-Esta sección solo aplica si no se utilizará el inicio recomendado con Docker.
-Para la instalación manual se necesita:
+Después puede ejecutarse `Ejecutar SICA` desde VS Code o:
 
-- JDK 17 o superior.
-- Maven 3.9 o superior.
-- PostgreSQL en ejecución.
-- Un usuario administrador de PostgreSQL para ejecutar la instalación.
-
-### Configurar la conexión
-
-La conexión se encuentra en:
-
-```text
-src/main/java/com/sica/infraestructura/ConexionBD.java
+```powershell
+cd sica
+mvn javafx:run
 ```
 
-Se deben ajustar estos valores según el entorno local:
+## Ejecutar con Docker en Linux o macOS
+
+1. Copiar `.env.example` como `.env` y cambiar las dos contraseñas.
+2. Iniciar PostgreSQL:
+
+```bash
+docker compose up -d --wait
+```
+
+3. Usar la misma `SICA_APP_PASSWORD` definida en `.env`:
+
+```bash
+export SICA_DB_URL='jdbc:postgresql://localhost:5433/sica_db'
+export SICA_DB_USER='sica_app'
+export SICA_DB_PASSWORD='contraseña_definida_en_env'
+cd sica
+mvn clean verify
+mvn javafx:run
+```
+
+## Instalación manual de PostgreSQL
+
+Desde la carpeta `sica`, ejecutar con un administrador de PostgreSQL:
+
+```bash
+psql -U postgres -f ddl_postgresql.sql
+psql -U postgres -d sica_db -f data.sql
+psql -U postgres -d sica_db -f dcl_postgresql.sql
+```
+
+Después definir:
 
 ```text
 SICA_DB_URL=jdbc:postgresql://localhost:5432/sica_db
 SICA_DB_USER=sica_app
-SICA_DB_PASSWORD=tu_contrasena
+SICA_DB_PASSWORD=contraseña_del_usuario_sica_app
 ```
 
-### Crear la estructura PostgreSQL
+Si no existe una contraseña configurada, SICA abre una pantalla para probar y
+guardar la conexión local. Las credenciales técnicas no se incluyen en Git.
 
-Desde una terminal ubicada en la carpeta del proyecto se ejecuta:
+## Compilación y pruebas
+
+Desde la raíz del repositorio o desde `sica`:
 
 ```bash
-psql -U postgres -f ddl_postgresql.sql
+mvn clean verify
 ```
 
-El cargador crea `sica_db` y ejecuta el archivo obligatorio `schema.sql` para
-crear tablas, relaciones, restricciones, índices y triggers. Como `schema.sql`
-reconstruye la estructura, no debe ejecutarse sobre datos que se quieran
-conservar.
-
-La aplicación lee estos valores desde variables de entorno y utiliza por
-defecto la URL local y el usuario técnico `sica_app`.
-
-Si `SICA_DB_PASSWORD` no está definida, la interfaz abre automáticamente la
-pantalla **Conexión con PostgreSQL**. La configuración validada se guarda en
-el perfil local del usuario, en `~/.sica/conexion.properties`, fuera del
-repositorio. El archivo local tiene prioridad para que la configuración elegida
-desde la interfaz o generada por Docker no dependa del entorno de VS Code. Si
-no existe ese archivo, se utilizan las variables de entorno.
-
-### Compilar
-
-Desde la carpeta que contiene `pom.xml`:
+Para ejecutar solamente las pruebas:
 
 ```bash
-mvn clean compile
+mvn test
 ```
 
-### Ejecutar la interfaz JavaFX
-
-Con PostgreSQL activo y las variables `SICA_DB_URL`, `SICA_DB_USER` y
-`SICA_DB_PASSWORD` definidas en la terminal:
-
-```bash
-mvn javafx:run
-```
-
-SICA abre una ventana de inicio de sesión construida con JavaFX, FXML y CSS.
-Las credenciales se validan mediante `LoginService` y PostgreSQL; no se utiliza
-la terminal ni `JOptionPane` como interfaz. Después de autenticarse se muestra
-un panel principal con un menú dinámico: cada rol solamente ve los módulos
-permitidos por el RBAC almacenado en PostgreSQL.
-
-Las pantallas disponibles cubren usuarios, roles y permisos, personas,
-empresas, visitas, control de acceso, solicitudes de aprobación, incidentes,
-auditoría y reportes. En **Control de acceso**, el guarda consulta el documento,
-ve la persona, anfitrión, estado y URL de fotografía, y solamente entonces
-registra el check-in o check-out. En **Solicitudes**, el estado se refresca
-automáticamente cada cuatro segundos para reflejar la respuesta del funcionario.
-
-La capa visual vive en `com.sica.presentacion`. Sus controladores llaman a los
-servicios y puertos existentes, pero no contienen SQL ni reglas de negocio.
-
-Para generar el paquete:
-
-```bash
-mvn clean package
-```
-
-## Ejecución
-
-La clase principal actual es:
+El paquete se genera en:
 
 ```text
-src/main/java/com/sica/Main.java
+sica/target/sica-1.0-SNAPSHOT.jar
 ```
 
-Puede ejecutarse desde la configuración **Ejecutar SICA** de VS Code o desde
-la carpeta `sica` con el plugin de JavaFX:
-
-```bash
-mvn javafx:run
-```
-
-`Main` inicia la aplicación JavaFX. La interfaz expone los casos de uso mediante
-controladores de presentación y conserva la lógica de negocio dentro de los
-servicios de aplicación.
+Las pruebas de integración PostgreSQL se activan cuando existe
+`SICA_DB_PASSWORD` en el entorno.
 
 ## Guía de uso
 
-Los principales casos de uso disponibles son:
+1. Iniciar PostgreSQL.
+2. Ejecutar SICA.
+3. Iniciar sesión.
+4. Seleccionar un módulo visible en el menú lateral.
+5. Ejecutar las acciones permitidas por el rol.
 
-| Operación | Servicio o método principal | Rol de ejemplo |
-|---|---|---|
-| Iniciar sesión | `LoginService.iniciarSesion` | Todos |
-| Crear usuario | `UsuarioService.crearUsuario` | Administrador |
-| Gestionar roles | `RolService.asociarPermisoARol` | Administrador |
-| Registrar persona | `PersonaService.registrarPersona` | Funcionario |
-| Gestionar empresa | `EmpresaService` | Funcionario |
-| Pre-registrar visita | `VisitaService.preRegistrarInvitado` | Funcionario |
-| Consultar visita | `VisitaService.consultarVisitaPorDocumento` | Guarda |
-| Registrar check-in | `VisitaService.registrarCheckIn` | Guarda |
-| Registrar check-out | `VisitaService.registrarCheckOut` | Guarda |
-| Solicitar visita no anunciada | `VisitaService.registrarVisitanteNoAnunciado` | Guarda |
-| Solicitar ingreso por olvido | `VisitaService.solicitarIngresoPorOlvido` | Guarda |
-| Aprobar o rechazar solicitud | `VisitaService.aprobarSolicitud` / `rechazarSolicitud` | Funcionario |
-| Cambiar estado de acceso | `PersonaService.cambiarEstadoAcceso` | Administrador |
-| Registrar incidente | `IncidenteService.registrarIncidente` | Guarda |
-| Generar reporte | `ReporteService.generarReporteVisitasPorEstado` | Administrador |
-| Consultar bitácora | `AuditoriaService.consultarBitacora` | Administrador |
+### Invitado pre-registrado
 
-Para las aprobaciones, el documento del usuario funcionario debe coincidir con
-el documento de su registro en `personas`. Los datos iniciales ya cumplen esta
-condición.
+```text
+Funcionario pre-registra -> APROBADO -> Guarda consulta documento
+-> Check-in -> DENTRO -> Check-out -> FINALIZADA -> Auditoría
+```
+
+### Invitado no anunciado
+
+```text
+Guarda registra -> PENDIENTE_APROBACION -> Funcionario aprueba o rechaza
+-> pantalla del guarda se actualiza -> ingreso permitido o denegado
+```
+
+### Trabajador sin carnet
+
+```text
+Guarda identifica -> PENDIENTE_APROBACION_POR_OLVIDO
+-> Funcionario responde -> ingreso puntual o denegación
+```
 
 ## Credenciales de ejemplo
 
-Las siguientes credenciales son creadas por `data.sql`:
+Estas cuentas son creadas por `data.sql` y solo deben utilizarse para pruebas:
 
 | Rol | Usuario | Contraseña |
 |---|---|---|
 | Administrador | `admin` | `admin123` |
-| Guarda de Seguridad | `guarda` | `guarda123` |
+| Guarda de seguridad | `guarda` | `guarda123` |
 | Funcionario | `funcionario` | `funcionario123` |
 
-Estas contraseñas son exclusivamente de demostración. El servicio actual las
-compara directamente; no deben utilizarse en un entorno de producción.
+## Git Flow y commits
+
+- `main`: versiones estables.
+- `develop`: integración del trabajo.
+- `feature/*`: nuevas funcionalidades.
+- `release/*`: preparación de entregas.
+- `hotfix/*`: correcciones urgentes.
+
+Los commits siguen Conventional Commits:
+
+```text
+feat: agregar control de acceso
+fix: corregir carga de visitas
+docs: actualizar instrucciones de instalación
+test: agregar prueba de salida olvidada
+```
+
+## Estado actual
+
+SICA dispone de interfaz JavaFX, persistencia PostgreSQL, Docker, RBAC,
+auditoría, reportes, pruebas unitarias y pruebas de integración. La aplicación
+puede continuar creciendo mediante los puertos y adaptadores existentes.

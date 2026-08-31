@@ -48,6 +48,7 @@ class FlujoInvitadoPreregistradoTest {
     private Persona trabajador;
 
     @BeforeEach
+    @SuppressWarnings("unused")
     void prepararFlujo() {
         personaRepository = new PersonaRepositoryEnMemoria();
         visitaRepository = new VisitaRepositoryEnMemoria();
@@ -127,14 +128,14 @@ class FlujoInvitadoPreregistradoTest {
 
     @Test
     void noPermitePreregistrarUnTrabajadorComoInvitado() {
-        assertThrows(VisitaInvalidaException.class, () ->
+        assertNotNull(assertThrows(VisitaInvalidaException.class, () ->
                 visitaService.preRegistrarInvitado(
                         funcionario.getId(),
                         funcionario.getId(),
                         LocalDateTime.now(),
                         "funcionario"
                 )
-        );
+        ));
     }
 
     @Test
@@ -185,8 +186,8 @@ class FlujoInvitadoPreregistradoTest {
 
         assertEquals(EstadoVisita.RECHAZADO,
                 visitaService.consultarEstadoSolicitud(solicitud.getId(), "guarda"));
-        assertThrows(AccesoNoAutorizadoException.class,
-                () -> visitaService.registrarCheckIn("30000003", "guarda"));
+        assertNotNull(assertThrows(AccesoNoAutorizadoException.class,
+                () -> visitaService.registrarCheckIn("30000003", "guarda")));
         assertTrue(bitacora.acciones.contains("RECHAZAR_SOLICITUD_VISITA"));
         assertFalse(bitacora.acciones.contains("REGISTRAR_CHECKIN"));
     }
@@ -228,8 +229,8 @@ class FlujoInvitadoPreregistradoTest {
 
         assertEquals(EstadoVisita.RECHAZADO,
                 visitaService.consultarEstadoSolicitud(solicitud.getId(), "guarda"));
-        assertThrows(AccesoNoAutorizadoException.class,
-                () -> visitaService.registrarCheckIn(trabajador.getDocumento(), "guarda"));
+        assertNotNull(assertThrows(AccesoNoAutorizadoException.class,
+                () -> visitaService.registrarCheckIn(trabajador.getDocumento(), "guarda")));
         assertTrue(bitacora.acciones.contains("SOLICITAR_INGRESO_POR_OLVIDO"));
         assertTrue(bitacora.acciones.contains("RECHAZAR_SOLICITUD_VISITA"));
         assertFalse(bitacora.acciones.contains("REGISTRAR_CHECKIN"));
