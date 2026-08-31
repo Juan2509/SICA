@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.sica.infraestructura.ConexionBD;
 import com.sica.persona.application.port.PersonaRepositoryPort;
@@ -184,6 +186,21 @@ public class PersonaRepositoryJdbcAdapter implements PersonaRepositoryPort {
 
         } catch (SQLException e) {
             throw new RuntimeException("Error al buscar la persona por id.", e);
+        }
+    }
+
+    @Override
+    public List<Persona> listarTodos() {
+        String sql = "SELECT id, nombre, documento, tipo, empresa_id, foto_url, estado_acceso "
+                + "FROM personas ORDER BY nombre";
+        List<Persona> personas = new ArrayList<>();
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql);
+             ResultSet resultado = statement.executeQuery()) {
+            while (resultado.next()) personas.add(mapearPersona(resultado));
+            return personas;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al listar las personas.", e);
         }
     }
 

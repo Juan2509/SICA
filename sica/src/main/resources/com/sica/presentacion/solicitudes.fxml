@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" styleClass="app-root">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="screen-header">
+            <padding><Insets top="18" right="30" bottom="18" left="30"/></padding>
+            <Button text="Volver" onAction="#volver" styleClass="secondary-button"/>
+            <VBox spacing="3">
+                <Label text="Solicitudes de aprobacion" styleClass="page-title"/>
+                <Label text="Invitados no anunciados y trabajadores sin carnet" styleClass="page-subtitle"/>
+            </VBox>
+        </HBox>
+    </top>
+    <center>
+        <VBox spacing="15" styleClass="screen-content">
+            <padding><Insets top="18" right="28" bottom="22" left="28"/></padding>
+            <HBox spacing="16">
+                <VBox fx:id="noAnunciadoPanel" prefWidth="350" spacing="8" styleClass="form-card">
+                    <Label text="Invitado no anunciado" styleClass="card-title"/>
+                    <TextField fx:id="nombreVisitanteField" promptText="Nombre del visitante" styleClass="login-field"/>
+                    <TextField fx:id="documentoVisitanteField" promptText="Documento del visitante" styleClass="login-field"/>
+                    <TextField fx:id="fotoVisitanteField" promptText="URL de foto (opcional)" styleClass="login-field"/>
+                    <TextField fx:id="anfitrionNoAnunciadoField" promptText="Documento del funcionario" styleClass="login-field"/>
+                    <Button text="Enviar solicitud" onAction="#registrarNoAnunciado"
+                            maxWidth="Infinity" styleClass="primary-button"/>
+                </VBox>
+                <VBox fx:id="olvidoPanel" prefWidth="350" spacing="8" styleClass="form-card">
+                    <Label text="Trabajador sin carnet" styleClass="card-title"/>
+                    <Label text="Localiza al trabajador y solicita un ingreso excepcional." wrapText="true" styleClass="card-description"/>
+                    <TextField fx:id="documentoTrabajadorField" promptText="Documento del trabajador" styleClass="login-field"/>
+                    <TextField fx:id="funcionarioOlvidoField" promptText="Documento del funcionario" styleClass="login-field"/>
+                    <Button text="Solicitar autorizacion" onAction="#solicitarPorOlvido"
+                            maxWidth="Infinity" styleClass="primary-button"/>
+                </VBox>
+                <VBox fx:id="estadoPanel" spacing="8" HBox.hgrow="ALWAYS" styleClass="form-card">
+                    <Label text="Estado para el guarda" styleClass="card-title"/>
+                    <Label text="Se actualiza automaticamente cada 4 segundos." styleClass="card-description"/>
+                    <HBox spacing="8">
+                        <TextField fx:id="visitaEstadoField" promptText="ID de solicitud" HBox.hgrow="ALWAYS" styleClass="login-field"/>
+                        <Button text="Consultar" onAction="#consultarEstado" styleClass="secondary-button"/>
+                    </HBox>
+                    <Label fx:id="estadoSolicitudLabel" text="SIN CONSULTAR" styleClass="request-status"/>
+                </VBox>
+            </HBox>
+            <VBox fx:id="respuestaPanel" spacing="10" VBox.vgrow="ALWAYS" styleClass="table-card">
+                <HBox alignment="CENTER_LEFT">
+                    <VBox spacing="3">
+                        <Label text="Solicitudes pendientes para el funcionario" styleClass="card-title"/>
+                        <Label text="La lista se actualiza automaticamente cada 4 segundos." styleClass="card-description"/>
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="Actualizar" onAction="#refrescarPendientes" styleClass="secondary-button"/>
+                </HBox>
+                <TableView fx:id="solicitudesTable" VBox.vgrow="ALWAYS" columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
+                    <columns>
+                        <TableColumn fx:id="idColumn" text="ID" prefWidth="70"/>
+                        <TableColumn fx:id="visitanteColumn" text="Visitante / trabajador" prefWidth="240"/>
+                        <TableColumn fx:id="documentoColumn" text="Documento" prefWidth="150"/>
+                        <TableColumn fx:id="fechaColumn" text="Fecha" prefWidth="170"/>
+                        <TableColumn fx:id="tipoColumn" text="Tipo de solicitud" prefWidth="250"/>
+                    </columns>
+                    <placeholder><Label text="No hay solicitudes pendientes"/></placeholder>
+                </TableView>
+                <HBox spacing="8" alignment="CENTER_RIGHT">
+                    <Button fx:id="rechazarButton" text="Rechazar" onAction="#rechazar" disable="true" styleClass="danger-button"/>
+                    <Button fx:id="aprobarButton" text="Aprobar" onAction="#aprobar" disable="true" styleClass="primary-button"/>
+                </HBox>
+            </VBox>
+            <Label fx:id="mensajeLabel" wrapText="true"/>
+        </VBox>
+    </center>
+</BorderPane>

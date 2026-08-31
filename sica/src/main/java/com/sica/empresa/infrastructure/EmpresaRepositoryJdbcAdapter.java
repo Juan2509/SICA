@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.sica.empresa.application.port.EmpresaRepositoryPort;
 import com.sica.empresa.domain.Empresa;
@@ -110,6 +112,25 @@ public class EmpresaRepositoryJdbcAdapter implements EmpresaRepositoryPort {
 
         } catch (SQLException e) {
             throw new RuntimeException("Error al verificar si la empresa existe.", e);
+        }
+    }
+
+    @Override
+    public List<Empresa> listarTodos() {
+        String sql = "SELECT id, nombre, identificador FROM empresas ORDER BY nombre";
+        List<Empresa> empresas = new ArrayList<>();
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql);
+             ResultSet resultado = statement.executeQuery()) {
+            while (resultado.next()) {
+                Empresa empresa = new Empresa(resultado.getString("nombre"),
+                        resultado.getString("identificador"));
+                empresa.setId(resultado.getLong("id"));
+                empresas.add(empresa);
+            }
+            return empresas;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al listar las empresas.", e);
         }
     }
 }

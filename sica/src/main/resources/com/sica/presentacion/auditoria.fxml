@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" styleClass="app-root">
+    <top><HBox alignment="CENTER_LEFT" spacing="15" styleClass="screen-header">
+        <padding><Insets top="18" right="30" bottom="18" left="30"/></padding>
+        <Button text="Volver" onAction="#volver" styleClass="secondary-button"/>
+        <VBox spacing="3"><Label text="Bitacora de auditoria" styleClass="page-title"/>
+            <Label text="Consulta de trazabilidad en modo solo lectura" styleClass="page-subtitle"/></VBox>
+        <Region HBox.hgrow="ALWAYS"/><Button text="Actualizar" onAction="#actualizar" styleClass="secondary-button"/>
+    </HBox></top>
+    <center><VBox spacing="12" styleClass="screen-content">
+        <padding><Insets top="22" right="28" bottom="25" left="28"/></padding>
+        <HBox><Label fx:id="totalLabel" text="0 registros" styleClass="info-title"/><Region HBox.hgrow="ALWAYS"/>
+            <Label text="Los registros no pueden editarse ni eliminarse" styleClass="card-description"/></HBox>
+        <TableView fx:id="auditoriaTable" VBox.vgrow="ALWAYS" columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
+            <columns>
+                <TableColumn fx:id="fechaColumn" text="Fecha" prefWidth="155"/>
+                <TableColumn fx:id="usuarioColumn" text="Usuario" prefWidth="110"/>
+                <TableColumn fx:id="accionColumn" text="Accion" prefWidth="190"/>
+                <TableColumn fx:id="entidadColumn" text="Entidad" prefWidth="100"/>
+                <TableColumn fx:id="resultadoColumn" text="Resultado" prefWidth="95"/>
+                <TableColumn fx:id="descripcionColumn" text="Descripcion" prefWidth="430"/>
+            </columns>
+            <placeholder><Label text="No existen registros de auditoria"/></placeholder>
+        </TableView>
+        <Label fx:id="mensajeLabel" wrapText="true"/>
+    </VBox></center>
+</BorderPane>

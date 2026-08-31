@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" styleClass="app-root">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="screen-header">
+            <padding><Insets top="20" right="30" bottom="20" left="30"/></padding>
+            <Button text="Volver" onAction="#volver" styleClass="secondary-button"/>
+            <VBox spacing="3">
+                <Label text="Gestion de personas" styleClass="page-title"/>
+                <Label text="Registro y consulta de trabajadores e invitados" styleClass="page-subtitle"/>
+            </VBox>
+        </HBox>
+    </top>
+    <center>
+        <HBox spacing="24" styleClass="screen-content">
+            <padding><Insets top="25" right="30" bottom="28" left="30"/></padding>
+            <VBox prefWidth="350" spacing="12" styleClass="form-card">
+                <Label text="Datos de la persona" styleClass="card-title"/>
+                <Label text="Nombre completo" styleClass="field-label"/>
+                <TextField fx:id="nombreField" promptText="Ej. Maria Perez" styleClass="login-field"/>
+                <Label text="Documento" styleClass="field-label"/>
+                <TextField fx:id="documentoField" promptText="Numero de documento" styleClass="login-field"/>
+                <Label text="Tipo" styleClass="field-label"/>
+                <ComboBox fx:id="tipoCombo" promptText="Selecciona el tipo" maxWidth="Infinity" styleClass="login-field"/>
+                <Label text="Empresa (opcional)" styleClass="field-label"/>
+                <ComboBox fx:id="empresaCombo" promptText="Selecciona una empresa" maxWidth="Infinity" styleClass="login-field"/>
+                <Label text="URL de fotografia (opcional)" styleClass="field-label"/>
+                <TextField fx:id="fotoUrlField" promptText="https://..." styleClass="login-field"/>
+                <HBox spacing="8">
+                    <Button fx:id="crearButton" text="Registrar" onAction="#crear" styleClass="primary-button" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <Button fx:id="buscarButton" text="Buscar" onAction="#buscar" styleClass="secondary-button"/>
+                </HBox>
+                <HBox spacing="8">
+                    <Button fx:id="actualizarButton" text="Actualizar" onAction="#actualizar" styleClass="secondary-button" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <Button fx:id="eliminarButton" text="Eliminar" onAction="#eliminar" styleClass="danger-button" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <Button text="Limpiar" onAction="#limpiar" styleClass="secondary-button"/>
+                </HBox>
+                <Label fx:id="mensajeLabel" wrapText="true"/>
+            </VBox>
+            <VBox spacing="12" HBox.hgrow="ALWAYS" styleClass="table-card">
+                <Label text="Personas registradas" styleClass="card-title"/>
+                <TableView fx:id="personasTable" VBox.vgrow="ALWAYS" columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
+                    <columns>
+                        <TableColumn fx:id="nombreColumn" text="Nombre" prefWidth="190"/>
+                        <TableColumn fx:id="documentoColumn" text="Documento" prefWidth="130"/>
+                        <TableColumn fx:id="tipoColumn" text="Tipo" prefWidth="110"/>
+                        <TableColumn fx:id="estadoColumn" text="Estado" prefWidth="110"/>
+                        <TableColumn fx:id="empresaColumn" text="Empresa" prefWidth="100"/>
+                    </columns>
+                    <placeholder><Label text="No hay personas para mostrar"/></placeholder>
+                </TableView>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>

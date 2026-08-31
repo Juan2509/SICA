@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" styleClass="app-root">
+    <top><HBox alignment="CENTER_LEFT" spacing="15" styleClass="screen-header">
+        <padding><Insets top="18" right="30" bottom="18" left="30"/></padding>
+        <Button text="Volver" onAction="#volver" styleClass="secondary-button"/>
+        <VBox spacing="3"><Label text="Reportes de visitas" styleClass="page-title"/>
+            <Label text="Consulta la informacion almacenada por estado" styleClass="page-subtitle"/></VBox>
+    </HBox></top>
+    <center><VBox spacing="14" styleClass="screen-content">
+        <padding><Insets top="22" right="28" bottom="25" left="28"/></padding>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="form-card">
+            <Label text="Estado de la visita" styleClass="field-label"/>
+            <ComboBox fx:id="estadoCombo" prefWidth="280"/>
+            <Button text="Generar reporte" onAction="#generar" styleClass="primary-button"/>
+            <Region HBox.hgrow="ALWAYS"/><Label fx:id="totalLabel" text="Selecciona un estado" styleClass="info-title"/>
+        </HBox>
+        <TableView fx:id="reporteTable" VBox.vgrow="ALWAYS" columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
+            <columns>
+                <TableColumn fx:id="idColumn" text="ID" prefWidth="55"/>
+                <TableColumn fx:id="visitanteColumn" text="Visitante" prefWidth="180"/>
+                <TableColumn fx:id="documentoColumn" text="Documento" prefWidth="120"/>
+                <TableColumn fx:id="anfitrionColumn" text="Visita a" prefWidth="180"/>
+                <TableColumn fx:id="programadaColumn" text="Programada" prefWidth="145"/>
+                <TableColumn fx:id="entradaColumn" text="Entrada" prefWidth="145"/>
+                <TableColumn fx:id="salidaColumn" text="Salida" prefWidth="145"/>
+            </columns>
+            <placeholder><Label text="Genera un reporte para consultar los resultados"/></placeholder>
+        </TableView>
+        <Label fx:id="mensajeLabel" wrapText="true"/>
+    </VBox></center>
+</BorderPane>

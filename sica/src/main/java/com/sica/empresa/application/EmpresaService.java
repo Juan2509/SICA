@@ -7,6 +7,7 @@ import com.sica.empresa.application.exception.EmpresaNoEncontradaException;
 import com.sica.empresa.application.port.EmpresaRepositoryPort;
 import com.sica.empresa.domain.Empresa;
 import com.sica.auditoria.application.port.BitacoraAuditoriaPort;
+import java.util.List;
 
 /**
  * Servicio de aplicacion para la Historia de Usuario E2-HU02 (Registrar empresa).
@@ -53,6 +54,11 @@ public class EmpresaService {
         );
 
         return empresaGuardada;
+    }
+
+    public List<Empresa> consultarEmpresas(String usuarioResponsable) {
+        autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_GESTIONAR_EMPRESAS);
+        return empresaRepository.listarTodos();
     }
 
     /**

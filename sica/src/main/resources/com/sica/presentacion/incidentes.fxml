@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" styleClass="app-root">
+    <top><HBox alignment="CENTER_LEFT" spacing="15" styleClass="screen-header">
+        <padding><Insets top="20" right="30" bottom="20" left="30"/></padding>
+        <Button text="Volver" onAction="#volver" styleClass="secondary-button"/>
+        <VBox spacing="3"><Label text="Registro de incidentes" styleClass="page-title"/>
+            <Label text="Deja constancia de una situacion de seguridad" styleClass="page-subtitle"/></VBox>
+    </HBox></top>
+    <center><VBox alignment="TOP_CENTER" styleClass="screen-content">
+        <padding><Insets top="35" right="120" bottom="35" left="120"/></padding>
+        <VBox maxWidth="650" spacing="13" styleClass="form-card">
+            <Label text="Informacion del incidente" styleClass="card-title"/>
+            <Label text="Descripcion" styleClass="field-label"/>
+            <TextArea fx:id="descripcionArea" promptText="Describe claramente lo sucedido..." prefRowCount="7" wrapText="true"/>
+            <Label text="Documento de la persona relacionada (opcional)" styleClass="field-label"/>
+            <TextField fx:id="documentoPersonaField" promptText="Dejalo vacio si no corresponde" styleClass="login-field"/>
+            <Label text="La fecha, la hora y el usuario responsable se registran automaticamente." wrapText="true" styleClass="card-description"/>
+            <Button text="Registrar incidente" onAction="#registrar" maxWidth="Infinity" styleClass="primary-button"/>
+            <Label fx:id="mensajeLabel" wrapText="true"/>
+        </VBox>
+    </VBox></center>
+</BorderPane>

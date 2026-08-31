@@ -1,6 +1,7 @@
 package com.sica.persona.application.port;
 
 import java.util.Optional;
+import java.util.List;
 
 import com.sica.persona.domain.Persona;
 import com.sica.persona.domain.EstadoAcceso;
@@ -28,4 +29,8 @@ public interface PersonaRepositoryPort {
     Optional<Persona> buscarPorDocumento(String documento);
 
     Optional<Persona> buscarPorId(Long id);
+
+    default List<Persona> listarTodos() {
+        return List.of();
+    }
 }

@@ -333,6 +333,31 @@ public class VisitaService {
         return visitaGuardada;
     }
 
+    public Visita registrarVisitanteNoAnunciadoPorDocumento(String nombre, String documento,
+                                                             String fotoUrl, String documentoVisitado,
+                                                             String usuarioResponsable) {
+        Persona personaVisitada = personaRepository.buscarPorDocumento(documentoVisitado)
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe el funcionario con documento: " + documentoVisitado));
+        return registrarVisitanteNoAnunciado(nombre, documento, fotoUrl,
+                personaVisitada.getId(), usuarioResponsable);
+    }
+
+    /** Variante para la interfaz: localiza ambas personas por documento. */
+    public Visita preRegistrarInvitadoPorDocumento(String documentoInvitado,
+                                                    String documentoPersonaVisitada,
+                                                    LocalDateTime fechaHoraVisita,
+                                                    String usuarioResponsable) {
+        Persona invitado = personaRepository.buscarPorDocumento(documentoInvitado)
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe el invitado con documento: " + documentoInvitado));
+        Persona personaVisitada = personaRepository.buscarPorDocumento(documentoPersonaVisitada)
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe la persona visitada con documento: " + documentoPersonaVisitada));
+        return preRegistrarInvitado(invitado.getId(), personaVisitada.getId(),
+                fechaHoraVisita, usuarioResponsable);
+    }
+
     /**
      * Solicita un ingreso excepcional para un trabajador que olvido su carnet (E5-HU02).
      * El trabajador se localiza por documento y la solicitud queda pendiente
@@ -379,6 +404,16 @@ public class VisitaService {
         return visitaGuardada;
     }
 
+    public Visita solicitarIngresoPorOlvidoPorDocumento(String documentoTrabajador,
+                                                         String documentoFuncionario,
+                                                         String usuarioResponsable) {
+        Persona funcionario = personaRepository.buscarPorDocumento(documentoFuncionario)
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe el funcionario con documento: " + documentoFuncionario));
+        return solicitarIngresoPorOlvido(documentoTrabajador, funcionario.getId(),
+                usuarioResponsable);
+    }
+
     /**
      * Consulta las solicitudes pendientes dirigidas a un funcionario.
      */
@@ -414,6 +449,14 @@ public class VisitaService {
                     );
                 })
                 .collect(Collectors.toList());
+    }
+
+    public List<SolicitudAprobacionInfo> consultarSolicitudesPendientesPorDocumento(
+            String documentoFuncionario, String usuarioResponsable) {
+        Persona funcionario = personaRepository.buscarPorDocumento(documentoFuncionario)
+                .orElseThrow(() -> new PersonaNoEncontradaException(
+                        "No existe el funcionario con documento: " + documentoFuncionario));
+        return consultarSolicitudesPendientes(funcionario.getId(), usuarioResponsable);
     }
 
     public Visita aprobarSolicitud(Long visitaId, String usuarioResponsable) {

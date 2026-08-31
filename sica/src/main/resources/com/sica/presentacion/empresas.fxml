@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" styleClass="app-root">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="screen-header">
+            <padding><Insets top="20" right="30" bottom="20" left="30"/></padding>
+            <Button text="Volver" onAction="#volver" styleClass="secondary-button"/>
+            <VBox spacing="3">
+                <Label text="Gestion de empresas" styleClass="page-title"/>
+                <Label text="Empresas ubicadas en el complejo Zona Acme" styleClass="page-subtitle"/>
+            </VBox>
+        </HBox>
+    </top>
+    <center>
+        <HBox spacing="24" styleClass="screen-content">
+            <padding><Insets top="25" right="30" bottom="28" left="30"/></padding>
+            <VBox prefWidth="340" spacing="12" styleClass="form-card">
+                <Label text="Datos de la empresa" styleClass="card-title"/>
+                <Label text="Nombre" styleClass="field-label"/>
+                <TextField fx:id="nombreField" promptText="Nombre de la empresa" styleClass="login-field"/>
+                <Label text="Identificador / NIT" styleClass="field-label"/>
+                <TextField fx:id="identificadorField" promptText="Ej. NIT-900001" styleClass="login-field"/>
+                <Button text="Registrar empresa" onAction="#crear" maxWidth="Infinity" styleClass="primary-button"/>
+                <HBox spacing="8">
+                    <Button text="Actualizar" onAction="#actualizar" styleClass="secondary-button" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <Button text="Eliminar" onAction="#eliminar" styleClass="danger-button" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <Button text="Limpiar" onAction="#limpiar" styleClass="secondary-button"/>
+                </HBox>
+                <Label fx:id="mensajeLabel" wrapText="true"/>
+            </VBox>
+            <VBox spacing="12" HBox.hgrow="ALWAYS" styleClass="table-card">
+                <Label text="Empresas registradas" styleClass="card-title"/>
+                <TableView fx:id="empresasTable" VBox.vgrow="ALWAYS" columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
+                    <columns>
+                        <TableColumn fx:id="nombreColumn" text="Nombre" prefWidth="300"/>
+                        <TableColumn fx:id="identificadorColumn" text="Identificador" prefWidth="220"/>
+                    </columns>
+                    <placeholder><Label text="No hay empresas para mostrar"/></placeholder>
+                </TableView>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>

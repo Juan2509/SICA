@@ -1,6 +1,7 @@
 package com.sica.persona.application;
 
 import java.util.Optional;
+import java.util.List;
 
 import com.sica.autorizacion.application.AutorizacionService;
 import com.sica.empresa.application.exception.EmpresaNoEncontradaException;
@@ -107,6 +108,11 @@ public class PersonaService {
         return personaEncontrada.orElseThrow(() ->
                 new PersonaNoEncontradaException("No existe ninguna persona registrada con el documento: " + documento)
         );
+    }
+
+    public List<Persona> consultarPersonas(String usuarioResponsable) {
+        autorizacionService.verificarPermiso(usuarioResponsable, PERMISO_CONSULTAR_PERSONA);
+        return personaRepository.listarTodos();
     }
 
     /**

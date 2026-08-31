@@ -65,4 +65,17 @@ public class IncidenteService {
 
         return incidenteGuardado;
     }
+
+    /** Registra usando el documento; puede omitirse cuando no hay persona asociada. */
+    public Incidente registrarIncidentePorDocumento(String descripcion, String documentoPersona,
+                                                     String usuarioResponsable) {
+        Long personaId = null;
+        if (documentoPersona != null && !documentoPersona.trim().isEmpty()) {
+            personaId = personaRepository.buscarPorDocumento(documentoPersona.trim())
+                    .orElseThrow(() -> new PersonaNoEncontradaException(
+                            "No existe una persona con documento: " + documentoPersona))
+                    .getId();
+        }
+        return registrarIncidente(descripcion, personaId, usuarioResponsable);
+    }
 }

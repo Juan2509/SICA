@@ -1,6 +1,7 @@
 package com.sica.empresa.application.port;
 
 import com.sica.empresa.domain.Empresa;
+import java.util.List;
 
 /**
  * Puerto de salida (hexagonal): define lo que la capa de aplicacion
@@ -17,4 +18,8 @@ public interface EmpresaRepositoryPort {
     boolean existePorId(Long id);
 
     boolean existePorIdentificador(String identificador);
+
+    default List<Empresa> listarTodos() {
+        return List.of();
+    }
 }

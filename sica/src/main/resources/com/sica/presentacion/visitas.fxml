@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" styleClass="app-root">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="screen-header">
+            <padding><Insets top="18" right="30" bottom="18" left="30"/></padding>
+            <Button text="Volver" onAction="#volver" styleClass="secondary-button"/>
+            <VBox spacing="3">
+                <Label text="Gestion de visitas" styleClass="page-title"/>
+                <Label text="Pre-registro, consulta y control de entradas y salidas" styleClass="page-subtitle"/>
+            </VBox>
+        </HBox>
+    </top>
+    <center>
+        <VBox spacing="16" styleClass="screen-content">
+            <padding><Insets top="20" right="28" bottom="24" left="28"/></padding>
+            <HBox spacing="18">
+                <VBox prefWidth="350" spacing="9" styleClass="form-card">
+                    <Label text="Pre-registrar invitado" styleClass="card-title"/>
+                    <Label text="Documento del invitado" styleClass="field-label"/>
+                    <TextField fx:id="documentoInvitadoField" promptText="Documento registrado" styleClass="login-field"/>
+                    <Label text="Documento de quien recibe" styleClass="field-label"/>
+                    <TextField fx:id="documentoAnfitrionField" promptText="Documento del funcionario" styleClass="login-field"/>
+                    <HBox spacing="8">
+                        <DatePicker fx:id="fechaVisitaPicker" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                        <TextField fx:id="horaVisitaField" promptText="HH:mm" prefWidth="85" styleClass="login-field"/>
+                    </HBox>
+                    <Button fx:id="preregistrarButton" text="Pre-registrar visita" onAction="#preregistrar"
+                            maxWidth="Infinity" styleClass="primary-button"/>
+                </VBox>
+                <VBox spacing="9" HBox.hgrow="ALWAYS" styleClass="form-card">
+                    <Label text="Consultar visita" styleClass="card-title"/>
+                    <Label text="Documento del visitante" styleClass="field-label"/>
+                    <HBox spacing="8">
+                        <TextField fx:id="documentoConsultaField" promptText="Documento" HBox.hgrow="ALWAYS" styleClass="login-field"/>
+                        <Button fx:id="consultarButton" text="Buscar" onAction="#consultar" styleClass="secondary-button"/>
+                    </HBox>
+                    <VBox spacing="8" styleClass="detail-panel">
+                        <Label fx:id="detalleNombreLabel" text="Visitante sin consultar" styleClass="info-title"/>
+                        <Label fx:id="detalleAnfitrionLabel" text="Visita a: -" styleClass="info-text"/>
+                        <Label fx:id="detalleEstadoLabel" text="Estado: -" styleClass="info-text"/>
+                        <Label fx:id="detalleFotoLabel" text="Foto: -" wrapText="true" styleClass="info-text"/>
+                    </VBox>
+                    <Label text="Registrar entrada o salida" styleClass="card-title"/>
+                    <TextField fx:id="documentoAccesoField" promptText="Documento del visitante" styleClass="login-field"/>
+                    <HBox spacing="8">
+                        <Button fx:id="checkinButton" text="Registrar check-in" onAction="#registrarCheckIn"
+                                HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="primary-button"/>
+                        <Button fx:id="checkoutButton" text="Registrar check-out" onAction="#registrarCheckOut"
+                                HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="secondary-button"/>
+                    </HBox>
+                </VBox>
+            </HBox>
+            <VBox spacing="10" VBox.vgrow="ALWAYS" styleClass="table-card">
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Personas actualmente dentro" styleClass="card-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="dentroButton" text="Actualizar" onAction="#consultarDentro" styleClass="secondary-button"/>
+                </HBox>
+                <TableView fx:id="dentroTable" VBox.vgrow="ALWAYS" columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
+                    <columns>
+                        <TableColumn fx:id="dentroNombreColumn" text="Nombre" prefWidth="260"/>
+                        <TableColumn fx:id="dentroDocumentoColumn" text="Documento" prefWidth="180"/>
+                        <TableColumn fx:id="dentroTipoColumn" text="Tipo" prefWidth="150"/>
+                        <TableColumn fx:id="dentroHoraColumn" text="Hora de entrada" prefWidth="190"/>
+                    </columns>
+                    <placeholder><Label text="No hay personas dentro del complejo"/></placeholder>
+                </TableView>
+            </VBox>
+            <Label fx:id="mensajeLabel" wrapText="true"/>
+        </VBox>
+    </center>
+</BorderPane>
