@@ -311,6 +311,11 @@ class FlujoInvitadoPreregistradoTest {
         public Optional<Usuario> buscarPorUsername(String username) {
             return Optional.ofNullable(usuarios.get(username));
         }
+
+        @Override
+        public List<Usuario> listarTodos() {
+            return new ArrayList<>(usuarios.values());
+        }
     }
 
     private static class RolRepositoryEnMemoria implements RolRepositoryPort {
@@ -347,6 +352,11 @@ class FlujoInvitadoPreregistradoTest {
 
         @Override
         public List<Permiso> listarPermisosDeRol(Long rolId) {
+            return List.of();
+        }
+
+        @Override
+        public List<Permiso> listarPermisos() {
             return List.of();
         }
     }
