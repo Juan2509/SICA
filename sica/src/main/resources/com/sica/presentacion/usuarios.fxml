@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" styleClass="app-root">
+ <top><HBox alignment="CENTER_LEFT" spacing="15" styleClass="screen-header"><padding><Insets top="18" right="30" bottom="18" left="30"/></padding><Button text="Volver" onAction="#volver" styleClass="secondary-button"/><VBox><Label text="Gestión de usuarios" styleClass="page-title"/><Label text="Crea, actualiza y elimina cuentas según los permisos RBAC" styleClass="page-subtitle"/></VBox></HBox></top>
+ <center><HBox spacing="18" styleClass="screen-content"><padding><Insets top="22" right="28" bottom="24" left="28"/></padding>
+  <VBox prefWidth="350" spacing="8" styleClass="form-card"><Label text="Datos del usuario" styleClass="card-title"/><Label text="Nombre" styleClass="field-label"/><TextField fx:id="nombreField" styleClass="login-field"/><Label text="Documento" styleClass="field-label"/><TextField fx:id="documentoField" styleClass="login-field"/><Label text="Nombre de usuario" styleClass="field-label"/><TextField fx:id="usernameField" styleClass="login-field"/><Label text="Contraseña" styleClass="field-label"/><PasswordField fx:id="passwordField" styleClass="login-field"/><Label text="Rol" styleClass="field-label"/><ComboBox fx:id="rolCombo" maxWidth="Infinity"/><HBox spacing="7"><Button fx:id="guardarButton" text="Crear" onAction="#guardar" styleClass="primary-button"/><Button fx:id="actualizarButton" text="Actualizar" onAction="#actualizar" styleClass="secondary-button"/><Button text="Limpiar" onAction="#limpiar" styleClass="secondary-button"/></HBox><Button fx:id="eliminarButton" text="Eliminar seleccionado" onAction="#eliminar" maxWidth="Infinity" styleClass="danger-button"/><Label fx:id="mensajeLabel" wrapText="true"/></VBox>
+  <VBox spacing="10" HBox.hgrow="ALWAYS" styleClass="table-card"><Label text="Usuarios registrados" styleClass="card-title"/><TableView fx:id="usuariosTable" VBox.vgrow="ALWAYS"><columns><TableColumn fx:id="nombreColumn" text="Nombre"/><TableColumn fx:id="documentoColumn" text="Documento"/><TableColumn fx:id="usernameColumn" text="Usuario"/><TableColumn fx:id="rolColumn" text="Rol"/></columns></TableView></VBox>
+ </HBox></center>
+</BorderPane>

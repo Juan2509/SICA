@@ -64,6 +64,7 @@ public class SolicitudesController {
 
     @FXML
     private void initialize() {
+        solicitudesTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         configurarPanel(noAnunciadoPanel, permisos.contains("registrar_visitante_no_anunciado"));
         configurarPanel(olvidoPanel, permisos.contains("solicitar_ingreso_por_olvido"));
         configurarPanel(respuestaPanel, permisos.contains("responder_solicitud_visita"));

@@ -110,6 +110,22 @@ public class RolRepositoryJdbcAdapter implements RolRepositoryPort {
     }
 
     @Override
+    public List<Permiso> listarPermisos() {
+        List<Permiso> permisos = new ArrayList<>();
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(
+                     "SELECT id, nombre FROM permisos ORDER BY nombre");
+             ResultSet resultado = statement.executeQuery()) {
+            while (resultado.next()) {
+                permisos.add(new Permiso(resultado.getLong("id"), resultado.getString("nombre")));
+            }
+            return permisos;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al consultar los permisos.", e);
+        }
+    }
+
+    @Override
     public boolean tienePermiso(Long rolId, String codigoPermiso) {
         String sql = "SELECT 1 "
                 + "FROM rol_permiso rp "

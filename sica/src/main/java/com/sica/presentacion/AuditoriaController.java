@@ -40,6 +40,7 @@ public class AuditoriaController {
 
     @FXML
     private void initialize() {
+        auditoriaTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         fechaColumn.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getFecha().format(FECHA)));
         usuarioColumn.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getUsuarioResponsable()));
         accionColumn.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getAccion()));

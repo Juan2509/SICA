@@ -411,9 +411,98 @@ Este patrón mantiene PostgreSQL fuera de dominio y aplicación.
 
 ## Instalación
 
-### Requisitos
+### Inicio recomendado con Docker
 
-Antes de instalar se necesita:
+Esta es la forma recomendada de ejecutar SICA en otro equipo. Docker reemplaza
+la instalación manual de PostgreSQL y reconstruye automáticamente la base de
+datos. Para ejecutar el código fuente todavía se necesita un JDK y VS Code (o
+Maven); no es necesario instalar PostgreSQL ni ejecutar scripts SQL a mano.
+
+Requisitos:
+
+- Docker Desktop iniciado.
+- JDK 17 o superior.
+- VS Code con la extensión Java, si se ejecutará `Main.java` desde el editor.
+
+Procedimiento desde cero:
+
+1. Descargar o clonar la carpeta completa `SICA`.
+2. Abrir Docker Desktop y esperar a que indique que está funcionando.
+3. Abrir en VS Code la carpeta raíz `SICA`, no solamente la subcarpeta `sica`.
+4. Abrir **Ejecutar y depurar** (`Ctrl + Shift + D`).
+5. Seleccionar **Ejecutar SICA** y presionar el botón verde.
+
+La configuración de VS Code ejecuta automáticamente `iniciar-sica.ps1` antes
+de Java. El script realiza estas acciones:
+
+1. Genera contraseñas locales aleatorias durante el primer inicio.
+2. Guarda esas contraseñas en `.env`, archivo excluido de Git.
+3. Crea la configuración JDBC en `%USERPROFILE%\.sica\conexion.properties`.
+4. Inicia `postgres:17-alpine` con Docker Compose.
+5. Espera a que PostgreSQL esté saludable.
+6. Docker ejecuta `schema.sql`, `data.sql` y los privilegios DCL.
+7. VS Code inicia `com.sica.Main`.
+
+También se puede preparar la base haciendo doble clic en:
+
+```text
+iniciar-sica.cmd
+```
+
+Después se ejecuta la configuración **Ejecutar SICA** en VS Code. La base del
+contenedor queda disponible solamente en este equipo mediante:
+
+```text
+jdbc:postgresql://localhost:5433/sica_db
+```
+
+Se utiliza el puerto `5433` para no entrar en conflicto con una instalación
+local de PostgreSQL que ya utilice `5432`.
+
+Comandos útiles desde la carpeta raíz `SICA`:
+
+```powershell
+# Consultar el estado
+docker compose ps
+
+# Consultar los mensajes de PostgreSQL
+docker compose logs postgres
+
+# Detener SICA conservando los datos
+docker compose down
+
+# Iniciar otra vez conservando los datos
+docker compose up -d --wait
+```
+
+Para reconstruir completamente la base con los datos iniciales se debe borrar
+el volumen. **Este comando elimina todos los datos creados durante las pruebas:**
+
+```powershell
+docker compose down -v
+.\iniciar-sica.ps1
+```
+
+Los archivos de `docker-entrypoint-initdb.d` se ejecutan únicamente cuando el
+volumen de PostgreSQL está vacío. Por eso modificar `schema.sql` o `data.sql`
+no altera automáticamente una base que ya fue inicializada.
+
+Credenciales funcionales después del primer inicio:
+
+```text
+Administrador: admin / admin123
+Guarda:        guarda / guarda123
+Funcionario:   funcionario / funcionario123
+```
+
+Los valores de `.env` son credenciales técnicas locales de PostgreSQL y no son
+las contraseñas utilizadas en la pantalla de inicio de sesión de SICA. No se
+debe subir `.env` al repositorio ni compartir su contenido.
+
+### Instalación manual sin Docker (alternativa)
+
+Esta sección solo aplica si no se utilizará el inicio recomendado con Docker.
+Para la instalación manual se necesita:
 
 - JDK 17 o superior.
 - Maven 3.9 o superior.
@@ -455,8 +544,9 @@ defecto la URL local y el usuario técnico `sica_app`.
 Si `SICA_DB_PASSWORD` no está definida, la interfaz abre automáticamente la
 pantalla **Conexión con PostgreSQL**. La configuración validada se guarda en
 el perfil local del usuario, en `~/.sica/conexion.properties`, fuera del
-repositorio. Las variables de entorno, cuando existen, tienen prioridad sobre
-ese archivo local.
+repositorio. El archivo local tiene prioridad para que la configuración elegida
+desde la interfaz o generada por Docker no dependa del entorno de VS Code. Si
+no existe ese archivo, se utilizan las variables de entorno.
 
 ### Compilar
 
@@ -478,7 +568,15 @@ mvn javafx:run
 SICA abre una ventana de inicio de sesión construida con JavaFX, FXML y CSS.
 Las credenciales se validan mediante `LoginService` y PostgreSQL; no se utiliza
 la terminal ni `JOptionPane` como interfaz. Después de autenticarse se muestra
-un panel principal básico con el nombre y rol del usuario.
+un panel principal con un menú dinámico: cada rol solamente ve los módulos
+permitidos por el RBAC almacenado en PostgreSQL.
+
+Las pantallas disponibles cubren usuarios, roles y permisos, personas,
+empresas, visitas, control de acceso, solicitudes de aprobación, incidentes,
+auditoría y reportes. En **Control de acceso**, el guarda consulta el documento,
+ve la persona, anfitrión, estado y URL de fotografía, y solamente entonces
+registra el check-in o check-out. En **Solicitudes**, el estado se refresca
+automáticamente cada cuatro segundos para reflejar la respuesta del funcionario.
 
 La capa visual vive en `com.sica.presentacion`. Sus controladores llaman a los
 servicios y puertos existentes, pero no contienen SQL ni reglas de negocio.
@@ -497,15 +595,16 @@ La clase principal actual es:
 src/main/java/com/sica/Main.java
 ```
 
-Puede ejecutarse desde el IDE o, después de compilar, con:
+Puede ejecutarse desde la configuración **Ejecutar SICA** de VS Code o desde
+la carpeta `sica` con el plugin de JavaFX:
 
 ```bash
-java -cp target/classes com.sica.Main
+mvn javafx:run
 ```
 
-Actualmente `Main` es un punto de entrada mínimo. Las funcionalidades están
-implementadas en los servicios de aplicación y todavía no existe una interfaz
-gráfica, API REST o menú de consola que exponga todos los casos de uso.
+`Main` inicia la aplicación JavaFX. La interfaz expone los casos de uso mediante
+controladores de presentación y conserva la lógica de negocio dentro de los
+servicios de aplicación.
 
 ## Guía de uso
 

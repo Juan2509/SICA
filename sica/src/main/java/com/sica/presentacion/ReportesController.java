@@ -45,6 +45,7 @@ public class ReportesController {
 
     @FXML
     private void initialize() {
+        reporteTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         estadoCombo.setItems(FXCollections.observableArrayList(EstadoVisita.values()));
         estadoCombo.setValue(EstadoVisita.DENTRO);
         idColumn.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getVisitaId())));

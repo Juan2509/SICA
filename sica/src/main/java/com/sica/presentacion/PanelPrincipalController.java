@@ -107,6 +107,14 @@ public class PanelPrincipalController {
     @FXML
     private void seleccionarModulo(ActionEvent evento) {
         Button opcion = (Button) evento.getSource();
+        if (opcion == usuariosButton) {
+            navegador.mostrarUsuarios(usuario, nombreRol);
+            return;
+        }
+        if (opcion == rolesButton) {
+            navegador.mostrarRoles(usuario, nombreRol);
+            return;
+        }
         if (opcion == personasButton) {
             navegador.mostrarPersonas(usuario, nombreRol);
             return;
@@ -117,6 +125,10 @@ public class PanelPrincipalController {
         }
         if (opcion == visitasButton) {
             navegador.mostrarVisitas(usuario, nombreRol);
+            return;
+        }
+        if (opcion == accesoButton) {
+            navegador.mostrarControlAcceso(usuario, nombreRol);
             return;
         }
         if (opcion == solicitudesButton) {
@@ -135,8 +147,6 @@ public class PanelPrincipalController {
             navegador.mostrarReportes(usuario, nombreRol);
             return;
         }
-        mostrarModulo(opcion.getText(), "Tu rol tiene permiso para acceder a este modulo. "
-                + "Su pantalla funcional se implementara en la siguiente etapa.");
     }
 
     private void mostrarModulo(String titulo, String descripcion) {

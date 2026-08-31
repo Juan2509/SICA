@@ -59,6 +59,7 @@ public class PersonasController {
 
     @FXML
     private void initialize() {
+        personasTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tipoCombo.setItems(FXCollections.observableArrayList(TipoPersona.values()));
         empresaCombo.setConverter(new StringConverter<>() {
             @Override public String toString(Empresa empresa) {

@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Adaptador PostgreSQL del puerto de usuarios. */
 public class UsuarioRepositoryJdbcAdapter implements UsuarioRepositoryPort {
@@ -167,6 +169,27 @@ public class UsuarioRepositoryJdbcAdapter implements UsuarioRepositoryPort {
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error al buscar el usuario en PostgreSQL.", e);
+        }
+    }
+
+    @Override
+    public List<Usuario> listarTodos() {
+        String sql = "SELECT u.id, p.nombre, p.documento, u.username, u.password, u.rol_id, u.activo "
+                + "FROM usuarios u INNER JOIN personas p ON p.id = u.persona_id ORDER BY u.id";
+        List<Usuario> usuarios = new ArrayList<>();
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement statement = conexion.prepareStatement(sql);
+             ResultSet resultado = statement.executeQuery()) {
+            while (resultado.next()) {
+                Usuario usuario = new Usuario(resultado.getString("nombre"),
+                        resultado.getString("documento"), resultado.getString("username"),
+                        resultado.getString("password"), resultado.getLong("rol_id"));
+                usuario.setId(resultado.getLong("id"));
+                usuarios.add(usuario);
+            }
+            return usuarios;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al listar los usuarios en PostgreSQL.", e);
         }
     }
 

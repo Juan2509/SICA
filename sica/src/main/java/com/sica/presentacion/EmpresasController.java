@@ -36,6 +36,7 @@ public class EmpresasController {
 
     @FXML
     private void initialize() {
+        empresasTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         nombreColumn.setCellValueFactory(dato -> new SimpleStringProperty(dato.getValue().getNombre()));
         identificadorColumn.setCellValueFactory(dato -> new SimpleStringProperty(dato.getValue().getIdentificador()));
         empresasTable.getSelectionModel().selectedItemProperty().addListener(

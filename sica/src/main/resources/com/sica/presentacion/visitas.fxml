@@ -60,7 +60,7 @@
                     <Region HBox.hgrow="ALWAYS"/>
                     <Button fx:id="dentroButton" text="Actualizar" onAction="#consultarDentro" styleClass="secondary-button"/>
                 </HBox>
-                <TableView fx:id="dentroTable" VBox.vgrow="ALWAYS" columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
+                <TableView fx:id="dentroTable" VBox.vgrow="ALWAYS">
                     <columns>
                         <TableColumn fx:id="dentroNombreColumn" text="Nombre" prefWidth="260"/>
                         <TableColumn fx:id="dentroDocumentoColumn" text="Documento" prefWidth="180"/>

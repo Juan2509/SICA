@@ -6,6 +6,7 @@ import com.sica.usuario.application.exception.UsuarioInvalidoException;
 import com.sica.auditoria.application.port.BitacoraAuditoriaPort;
 import com.sica.usuario.application.port.UsuarioRepositoryPort;
 import com.sica.usuario.domain.Usuario;
+import java.util.List;
 
 /**
  * Servicio de aplicacion para la Historia de Usuario E1-HU01 (Crear usuario).
@@ -103,6 +104,10 @@ public class UsuarioService {
                 "Se elimino el usuario con id: " + usuario.getId() + " y username: " + username,
                 usuarioResponsable
         );
+    }
+
+    public List<Usuario> consultarUsuarios() {
+        return usuarioRepository.listarTodos();
     }
 
     private void validarDatosObligatorios(String nombre, String documento, String username,

@@ -54,7 +54,7 @@
                     <Region HBox.hgrow="ALWAYS"/>
                     <Button text="Actualizar" onAction="#refrescarPendientes" styleClass="secondary-button"/>
                 </HBox>
-                <TableView fx:id="solicitudesTable" VBox.vgrow="ALWAYS" columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
+                <TableView fx:id="solicitudesTable" VBox.vgrow="ALWAYS">
                     <columns>
                         <TableColumn fx:id="idColumn" text="ID" prefWidth="70"/>
                         <TableColumn fx:id="visitanteColumn" text="Visitante / trabajador" prefWidth="240"/>

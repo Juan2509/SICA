@@ -77,10 +77,11 @@ public class ConexionBD {
     }
 
     private static String obtenerValor(String variableEntorno, String propiedad, String valorDefecto) {
+        String local = cargarPropiedades().getProperty(propiedad);
+        if (local != null && !local.isBlank()) return local;
         String entorno = System.getenv(variableEntorno);
         if (entorno != null && !entorno.isBlank()) return entorno;
-        String local = cargarPropiedades().getProperty(propiedad);
-        return local == null || local.isBlank() ? valorDefecto : local;
+        return valorDefecto;
     }
 
     private static Properties cargarPropiedades() {

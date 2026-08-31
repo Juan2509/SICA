@@ -1,0 +1,30 @@
+name: sica
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: sica-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sica_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SICA_APP_PASSWORD: ${SICA_APP_PASSWORD}
+      TZ: America/Bogota
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - sica_postgres_data:/var/lib/postgresql/data
+      - ./sica/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./sica/data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+      - ./docker/init/03-security.sh:/docker-entrypoint-initdb.d/03-security.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sica_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  sica_postgres_data:
+    name: sica_postgres_data

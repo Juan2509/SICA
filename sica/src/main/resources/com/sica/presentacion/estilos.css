@@ -55,7 +55,7 @@
 .form-title {
     -fx-text-fill: #153448;
     -fx-font-size: 31px;
-    -fx-font-weight: 750;
+    -fx-font-weight: bold;
 }
 
 .form-subtitle, .page-subtitle, .welcome-subtitle {
@@ -140,7 +140,7 @@
     -fx-border-color: transparent transparent #dfe7eb transparent;
 }
 
-.page-title { -fx-text-fill: #17384c; -fx-font-size: 21px; -fx-font-weight: 750; }
+.page-title { -fx-text-fill: #17384c; -fx-font-size: 21px; -fx-font-weight: bold; }
 .user-name { -fx-text-fill: #263f4e; -fx-font-size: 13px; -fx-font-weight: 700; }
 .user-role { -fx-text-fill: #16857f; -fx-font-size: 10px; -fx-font-weight: 800; }
 
@@ -155,7 +155,7 @@
 }
 
 .content-area { -fx-background-color: #f2f6f8; }
-.welcome-title { -fx-text-fill: #17384c; -fx-font-size: 27px; -fx-font-weight: 750; }
+.welcome-title { -fx-text-fill: #17384c; -fx-font-size: 27px; -fx-font-weight: bold; }
 
 .summary-card {
     -fx-background-color: white;
@@ -176,7 +176,7 @@
     -fx-padding: 22;
 }
 
-.info-title { -fx-text-fill: #195853; -fx-font-size: 15px; -fx-font-weight: 750; }
+.info-title { -fx-text-fill: #195853; -fx-font-size: 15px; -fx-font-weight: bold; }
 .info-text { -fx-text-fill: #50746f; -fx-font-size: 13px; }
 
 .screen-header {

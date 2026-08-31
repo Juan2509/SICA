@@ -4,7 +4,9 @@ import com.sica.auditoria.infrastructure.BitacoraAuditoriaJdbcAdapter;
 import com.sica.autenticacion.application.LoginService;
 import com.sica.rol.application.port.RolRepositoryPort;
 import com.sica.rol.infrastructure.RolRepositoryJdbcAdapter;
+import com.sica.rol.application.RolService;
 import com.sica.usuario.application.port.UsuarioRepositoryPort;
+import com.sica.usuario.application.UsuarioService;
 import com.sica.usuario.infrastructure.UsuarioRepositoryJdbcAdapter;
 import com.sica.autorizacion.application.AutorizacionService;
 import com.sica.empresa.application.EmpresaService;
@@ -34,6 +36,8 @@ public class SicaApplication extends Application {
         BitacoraAuditoriaJdbcAdapter bitacora = new BitacoraAuditoriaJdbcAdapter();
         LoginService loginService = new LoginService(usuarios, bitacora);
         AutorizacionService autorizacion = new AutorizacionService(usuarios, roles);
+        UsuarioService usuarioService = new UsuarioService(usuarios, bitacora, autorizacion);
+        RolService rolService = new RolService(roles, bitacora, autorizacion);
         EmpresaRepositoryPort empresas = new EmpresaRepositoryJdbcAdapter();
         PersonaRepositoryPort personas = new PersonaRepositoryJdbcAdapter();
         EmpresaService empresaService = new EmpresaService(empresas, bitacora, autorizacion);
@@ -45,7 +49,7 @@ public class SicaApplication extends Application {
         AuditoriaService auditoriaService = new AuditoriaService(bitacora, autorizacion);
         ReporteService reporteService = new ReporteService(visitas, personas, bitacora, autorizacion);
 
-        Navegador navegador = new Navegador(stage, loginService, roles,
+        Navegador navegador = new Navegador(stage, loginService, roles, usuarioService, rolService,
                 personaService, empresaService, visitaService, incidenteService,
                 auditoriaService, reporteService);
         if (ConexionBD.faltaConfiguracion()) navegador.mostrarConfiguracionBD();

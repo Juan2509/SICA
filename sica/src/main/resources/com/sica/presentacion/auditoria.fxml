@@ -14,7 +14,7 @@
         <padding><Insets top="22" right="28" bottom="25" left="28"/></padding>
         <HBox><Label fx:id="totalLabel" text="0 registros" styleClass="info-title"/><Region HBox.hgrow="ALWAYS"/>
             <Label text="Los registros no pueden editarse ni eliminarse" styleClass="card-description"/></HBox>
-        <TableView fx:id="auditoriaTable" VBox.vgrow="ALWAYS" columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
+        <TableView fx:id="auditoriaTable" VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn fx:id="fechaColumn" text="Fecha" prefWidth="155"/>
                 <TableColumn fx:id="usuarioColumn" text="Usuario" prefWidth="110"/>

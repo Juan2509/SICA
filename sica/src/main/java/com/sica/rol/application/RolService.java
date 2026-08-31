@@ -47,6 +47,10 @@ public class RolService {
         return rolRepository.listarPermisosDeRol(rolId);
     }
 
+    public List<Permiso> consultarPermisos() {
+        return rolRepository.listarPermisos();
+    }
+
     /**
      * Asocia un permiso existente a un rol existente.
      *

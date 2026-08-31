@@ -9,12 +9,14 @@ import com.sica.visita.application.VisitaService;
 import com.sica.incidente.application.IncidenteService;
 import com.sica.auditoria.application.AuditoriaService;
 import com.sica.reporte.application.ReporteService;
+import com.sica.usuario.application.UsuarioService;
+import com.sica.rol.application.RolService;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.scene.control.Alert;
 
-import java.io.IOException;
 import java.util.Set;
 
 /** Cambia las pantallas sin mezclar esta tarea con la logica de negocio. */
@@ -23,6 +25,8 @@ public class Navegador {
     private final Stage stage;
     private final LoginService loginService;
     private final RolRepositoryPort rolRepository;
+    private final UsuarioService usuarioService;
+    private final RolService rolService;
     private final PersonaService personaService;
     private final EmpresaService empresaService;
     private final VisitaService visitaService;
@@ -31,13 +35,16 @@ public class Navegador {
     private final ReporteService reporteService;
 
     public Navegador(Stage stage, LoginService loginService,
-                     RolRepositoryPort rolRepository, PersonaService personaService,
+                     RolRepositoryPort rolRepository, UsuarioService usuarioService,
+                     RolService rolService, PersonaService personaService,
                      EmpresaService empresaService, VisitaService visitaService,
                      IncidenteService incidenteService, AuditoriaService auditoriaService,
                      ReporteService reporteService) {
         this.stage = stage;
         this.loginService = loginService;
         this.rolRepository = rolRepository;
+        this.usuarioService = usuarioService;
+        this.rolService = rolService;
         this.personaService = personaService;
         this.empresaService = empresaService;
         this.visitaService = visitaService;
@@ -70,6 +77,24 @@ public class Navegador {
                 obtenerPermisos(usuario), personaService, empresaService, this);
         mostrarPantalla("personas.fxml", controller,
                 "SICA | Gestion de personas", 1180, 720);
+    }
+
+    public void mostrarUsuarios(Usuario usuario, String nombreRol) {
+        UsuariosController controller = new UsuariosController(usuario, nombreRol,
+                obtenerPermisos(usuario), usuarioService, rolService, this);
+        mostrarPantalla("usuarios.fxml", controller, "SICA | Gestion de usuarios", 1180, 720);
+    }
+
+    public void mostrarRoles(Usuario usuario, String nombreRol) {
+        RolesController controller = new RolesController(usuario, nombreRol, rolService, this);
+        mostrarPantalla("roles.fxml", controller, "SICA | Roles y permisos", 1000, 680);
+    }
+
+    public void mostrarControlAcceso(Usuario usuario, String nombreRol) {
+        ControlAccesoController controller = new ControlAccesoController(usuario, nombreRol,
+                obtenerPermisos(usuario), visitaService, this);
+        mostrarPantalla("control-acceso.fxml", controller,
+                "SICA | Control de acceso", 1180, 740);
     }
 
     public void mostrarEmpresas(Usuario usuario, String nombreRol) {
@@ -137,8 +162,17 @@ public class Navegador {
             stage.setScene(escena);
             stage.centerOnScreen();
             stage.show();
-        } catch (IOException | NullPointerException e) {
-            throw new IllegalStateException("No se pudo cargar la interfaz: " + archivoFxml, e);
+        } catch (Exception e) {
+            Throwable causa = e;
+            while (causa.getCause() != null) causa = causa.getCause();
+            String detalle = causa.getMessage() == null
+                    ? causa.getClass().getSimpleName() : causa.getMessage();
+            Alert alerta = new Alert(Alert.AlertType.ERROR);
+            alerta.initOwner(stage);
+            alerta.setTitle("No se pudo abrir el modulo");
+            alerta.setHeaderText("Error al cargar " + titulo);
+            alerta.setContentText(detalle);
+            alerta.showAndWait();
         }
     }
 }

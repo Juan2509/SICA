@@ -33,7 +33,7 @@
             </VBox>
             <VBox spacing="12" HBox.hgrow="ALWAYS" styleClass="table-card">
                 <Label text="Empresas registradas" styleClass="card-title"/>
-                <TableView fx:id="empresasTable" VBox.vgrow="ALWAYS" columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
+                <TableView fx:id="empresasTable" VBox.vgrow="ALWAYS">
                     <columns>
                         <TableColumn fx:id="nombreColumn" text="Nombre" prefWidth="300"/>
                         <TableColumn fx:id="identificadorColumn" text="Identificador" prefWidth="220"/>

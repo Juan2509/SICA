@@ -22,5 +22,7 @@ public interface RolRepositoryPort {
 
     List<Permiso> listarPermisosDeRol(Long rolId);
 
+    List<Permiso> listarPermisos();
+
     boolean tienePermiso(Long rolId, String codigoPermiso);
 }

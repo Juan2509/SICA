@@ -8,7 +8,8 @@
             "mainClass": "com.sica.Main",
             "projectName": "sica",
             "cwd": "${workspaceFolder}/sica",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "preLaunchTask": "Preparar PostgreSQL SICA"
         }
     ]
 }

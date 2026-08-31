@@ -65,6 +65,7 @@ public class VisitasController {
 
     @FXML
     private void initialize() {
+        dentroTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         fechaVisitaPicker.setValue(LocalDate.now());
         horaVisitaField.setText(LocalTime.now().plusHours(1).format(HORA));
         preregistrarButton.setDisable(!permisos.contains("registrar_visita"));

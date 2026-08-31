@@ -17,7 +17,7 @@
             <Button text="Generar reporte" onAction="#generar" styleClass="primary-button"/>
             <Region HBox.hgrow="ALWAYS"/><Label fx:id="totalLabel" text="Selecciona un estado" styleClass="info-title"/>
         </HBox>
-        <TableView fx:id="reporteTable" VBox.vgrow="ALWAYS" columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
+        <TableView fx:id="reporteTable" VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn fx:id="idColumn" text="ID" prefWidth="55"/>
                 <TableColumn fx:id="visitanteColumn" text="Visitante" prefWidth="180"/>

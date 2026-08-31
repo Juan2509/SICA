@@ -1,6 +1,7 @@
 package com.sica.usuario.application.port;
 
 import java.util.Optional;
+import java.util.List;
 
 import com.sica.usuario.domain.Usuario;
 
@@ -21,4 +22,6 @@ public interface UsuarioRepositoryPort {
     boolean existePorUsername(String username);
 
     Optional<Usuario> buscarPorUsername(String username);
+
+    List<Usuario> listarTodos();
 }

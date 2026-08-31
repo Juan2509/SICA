@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" styleClass="app-root">
+ <top><HBox alignment="CENTER_LEFT" spacing="15" styleClass="screen-header"><padding><Insets top="18" right="30" bottom="18" left="30"/></padding><Button text="Volver" onAction="#volver" styleClass="secondary-button"/><VBox><Label text="Roles y permisos" styleClass="page-title"/><Label text="Configuración RBAC almacenada en PostgreSQL" styleClass="page-subtitle"/></VBox></HBox></top>
+ <center><HBox spacing="18" styleClass="screen-content"><padding><Insets top="24" right="30" bottom="26" left="30"/></padding><VBox prefWidth="300" spacing="10" styleClass="table-card"><Label text="Roles" styleClass="card-title"/><ListView fx:id="rolesList" VBox.vgrow="ALWAYS"/></VBox><VBox spacing="12" HBox.hgrow="ALWAYS" styleClass="table-card"><Label text="Permisos del rol seleccionado" styleClass="card-title"/><ListView fx:id="permisosRolList" VBox.vgrow="ALWAYS"/><Label text="Agregar un permiso" styleClass="field-label"/><HBox spacing="10"><ComboBox fx:id="permisoCombo" HBox.hgrow="ALWAYS" maxWidth="Infinity"/><Button text="Asociar permiso" onAction="#asociar" styleClass="primary-button"/></HBox><Label fx:id="mensajeLabel" wrapText="true"/></VBox></HBox></center>
+</BorderPane>
