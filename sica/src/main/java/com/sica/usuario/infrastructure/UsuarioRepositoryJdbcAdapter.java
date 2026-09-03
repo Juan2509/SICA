@@ -150,7 +150,8 @@ public class UsuarioRepositoryJdbcAdapter implements UsuarioRepositoryPort {
 
     @Override
     public Optional<Usuario> buscarPorUsername(String username) {
-        String sql = "SELECT u.id, p.nombre, p.documento, u.username, u.password, u.rol_id "
+        String sql = "SELECT u.id, p.nombre, p.documento, u.username, u.password, u.rol_id, "
+                + "u.es_administrador_principal "
                 + "FROM usuarios u INNER JOIN personas p ON p.id = u.persona_id "
                 + "WHERE u.username = ? AND u.activo = TRUE";
         try (Connection conexion = ConexionBD.obtenerConexion();
@@ -165,6 +166,7 @@ public class UsuarioRepositoryJdbcAdapter implements UsuarioRepositoryPort {
                         resultado.getString("username"), resultado.getString("password"),
                         resultado.getLong("rol_id"));
                 usuario.setId(resultado.getLong("id"));
+                usuario.setAdministradorPrincipal(resultado.getBoolean("es_administrador_principal"));
                 return Optional.of(usuario);
             }
         } catch (SQLException e) {
@@ -174,7 +176,8 @@ public class UsuarioRepositoryJdbcAdapter implements UsuarioRepositoryPort {
 
     @Override
     public List<Usuario> listarTodos() {
-        String sql = "SELECT u.id, p.nombre, p.documento, u.username, u.password, u.rol_id, u.activo "
+        String sql = "SELECT u.id, p.nombre, p.documento, u.username, u.password, u.rol_id, u.activo, "
+                + "u.es_administrador_principal "
                 + "FROM usuarios u INNER JOIN personas p ON p.id = u.persona_id ORDER BY u.id";
         List<Usuario> usuarios = new ArrayList<>();
         try (Connection conexion = ConexionBD.obtenerConexion();
@@ -185,6 +188,7 @@ public class UsuarioRepositoryJdbcAdapter implements UsuarioRepositoryPort {
                         resultado.getString("documento"), resultado.getString("username"),
                         resultado.getString("password"), resultado.getLong("rol_id"));
                 usuario.setId(resultado.getLong("id"));
+                usuario.setAdministradorPrincipal(resultado.getBoolean("es_administrador_principal"));
                 usuarios.add(usuario);
             }
             return usuarios;

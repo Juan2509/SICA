@@ -13,6 +13,7 @@ public class Usuario {
     private String password;
     private Long rolId;
     private boolean activo;
+    private boolean administradorPrincipal;
 
     public Usuario(String nombre, String documento, String username, String password, Long rolId) {
         this.nombre = nombre;
@@ -21,6 +22,7 @@ public class Usuario {
         this.password = password;
         this.rolId = rolId;
         this.activo = true;
+        this.administradorPrincipal = false;
     }
 
     public Long getId() {
@@ -53,5 +55,24 @@ public class Usuario {
 
     public boolean isActivo() {
         return activo;
+    }
+
+    public boolean isAdministradorPrincipal() {
+        return administradorPrincipal;
+    }
+
+    public void setAdministradorPrincipal(boolean administradorPrincipal) {
+        this.administradorPrincipal = administradorPrincipal;
+    }
+
+    /** Actualiza los datos del usuario que representa la sesión iniciada. */
+    public void actualizarSesion(Usuario usuarioActualizado) {
+        this.nombre = usuarioActualizado.getNombre();
+        this.documento = usuarioActualizado.getDocumento();
+        this.username = usuarioActualizado.getUsername();
+        this.password = usuarioActualizado.getPassword();
+        this.rolId = usuarioActualizado.getRolId();
+        this.activo = usuarioActualizado.isActivo();
+        this.administradorPrincipal = usuarioActualizado.isAdministradorPrincipal();
     }
 }

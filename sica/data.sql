@@ -70,13 +70,13 @@ INSERT INTO personas (
         'https://example.com/fotos/invitado-pendiente.jpg', 'HABILITADO');
 
 -- Credenciales de ejemplo. LoginService aun compara texto directamente.
-INSERT INTO usuarios (persona_id, username, password, rol_id, activo) VALUES
+INSERT INTO usuarios (persona_id, username, password, rol_id, activo, es_administrador_principal) VALUES
     ((SELECT id FROM personas WHERE documento = '10000001'), 'admin',
-        'admin123', (SELECT id FROM roles WHERE nombre = 'ADMINISTRADOR'), TRUE),
+        'admin123', (SELECT id FROM roles WHERE nombre = 'ADMINISTRADOR'), TRUE, TRUE),
     ((SELECT id FROM personas WHERE documento = '10000002'), 'guarda',
-        'guarda123', (SELECT id FROM roles WHERE nombre = 'GUARDA_SEGURIDAD'), TRUE),
+        'guarda123', (SELECT id FROM roles WHERE nombre = 'GUARDA_SEGURIDAD'), TRUE, FALSE),
     ((SELECT id FROM personas WHERE documento = '10000003'), 'funcionario',
-        'funcionario123', (SELECT id FROM roles WHERE nombre = 'FUNCIONARIO'), TRUE);
+        'funcionario123', (SELECT id FROM roles WHERE nombre = 'FUNCIONARIO'), TRUE, FALSE);
 
 -- Invitado pre-registrado aprobado.
 INSERT INTO visitas (invitado_id, persona_visitada_id, fecha_hora_visita, estado)

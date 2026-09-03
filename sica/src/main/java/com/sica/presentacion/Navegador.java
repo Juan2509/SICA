@@ -66,8 +66,13 @@ public class Navegador {
     }
 
     public void mostrarPanel(Usuario usuario, String nombreRol) {
+        String nombreRolActual = rolRepository.listarRoles().stream()
+                .filter(rol -> rol.getId().equals(usuario.getRolId()))
+                .map(rol -> rol.getNombre().replace('_', ' '))
+                .findFirst()
+                .orElse("ROL SIN NOMBRE");
         PanelPrincipalController controller = new PanelPrincipalController(
-                usuario, nombreRol, rolRepository, this);
+                usuario, nombreRolActual, rolRepository, this);
         mostrarPantalla("panel-principal.fxml", controller,
                 "SICA | Panel principal", 1100, 680);
     }

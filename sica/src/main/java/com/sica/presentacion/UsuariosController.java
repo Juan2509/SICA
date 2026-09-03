@@ -61,7 +61,10 @@ public class UsuariosController {
         actualizarButton.setDisable(!permisos.contains("actualizar_usuario"));
         eliminarButton.setDisable(!permisos.contains("eliminar_usuario"));
         usuariosTable.getSelectionModel().selectedItemProperty().addListener(
-                (observable, anterior, seleccionado) -> cargarFormulario(seleccionado));
+                (observable, anterior, seleccionado) -> {
+                    cargarFormulario(seleccionado);
+                    actualizarEstadoEliminar(seleccionado);
+                });
         refrescar();
     }
 
@@ -74,9 +77,15 @@ public class UsuariosController {
     @FXML private void actualizar() {
         Usuario seleccionado = usuariosTable.getSelectionModel().getSelectedItem();
         if (seleccionado == null) { mostrar("Selecciona el usuario que deseas actualizar.", true); return; }
-        ejecutar(() -> usuarioService.actualizarUsuario(seleccionado.getUsername(), nombreField.getText(),
-                documentoField.getText(), usernameField.getText(), passwordField.getText(),
-                rolSeleccionado(), usuarioActual.getUsername()), "Usuario actualizado correctamente.");
+        ejecutar(() -> {
+            Usuario actualizado = usuarioService.actualizarUsuario(seleccionado.getUsername(),
+                    nombreField.getText(), documentoField.getText(), usernameField.getText(),
+                    passwordField.getText(), rolSeleccionado(), usuarioActual.getUsername());
+            if (seleccionado.getId().equals(usuarioActual.getId())) {
+                usuarioActual.actualizarSesion(actualizado);
+            }
+            return actualizado;
+        }, "Usuario actualizado correctamente.");
     }
 
     @FXML private void eliminar() {
@@ -112,9 +121,19 @@ public class UsuariosController {
                 .findFirst().ifPresent(rolCombo::setValue);
     }
 
+    private void actualizarEstadoEliminar(Usuario seleccionado) {
+        boolean sinPermiso = !permisos.contains("eliminar_usuario");
+        boolean cuentaActual = seleccionado != null
+                && seleccionado.getUsername().equals(usuarioActual.getUsername());
+        boolean administradorPrincipal = seleccionado != null
+                && seleccionado.isAdministradorPrincipal();
+        eliminarButton.setDisable(sinPermiso || cuentaActual || administradorPrincipal);
+    }
+
     @FXML private void limpiar() {
         usuariosTable.getSelectionModel().clearSelection(); nombreField.clear(); documentoField.clear();
         usernameField.clear(); passwordField.clear(); rolCombo.setValue(null);
+        actualizarEstadoEliminar(null);
     }
 
     @FXML private void volver() { navegador.mostrarPanel(usuarioActual, nombreRol); }

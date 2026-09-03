@@ -81,6 +81,7 @@ public class UsuarioService {
 
         Usuario usuarioActualizado = new Usuario(nombre, documento, nuevoUsername, password, rolId);
         usuarioActualizado.setId(usuarioActual.getId());
+        usuarioActualizado.setAdministradorPrincipal(usuarioActual.isAdministradorPrincipal());
         usuarioRepository.actualizar(usuarioActualizado);
 
         bitacoraAuditoria.registrar(
@@ -97,6 +98,15 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.buscarPorUsername(username)
                 .orElseThrow(() -> new UsuarioInvalidoException(
                         "No existe un usuario con el username: " + username));
+
+        if (username.equals(usuarioResponsable)) {
+            throw new UsuarioInvalidoException(
+                    "No puedes eliminar el usuario con el que tienes la sesión iniciada.");
+        }
+        if (usuario.isAdministradorPrincipal()) {
+            throw new UsuarioInvalidoException(
+                    "El administrador principal de SICA no puede eliminarse.");
+        }
 
         usuarioRepository.eliminar(usuario.getId());
         bitacoraAuditoria.registrar(
