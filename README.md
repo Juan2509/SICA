@@ -411,6 +411,216 @@ Este patrón mantiene PostgreSQL fuera de dominio y aplicación.
 
 ## Instalación
 
+### Ejecución en macOS y Linux
+
+El código Java, Maven, JavaFX, PostgreSQL y Docker Compose son multiplataforma.
+Sin embargo, `iniciar-sica.cmd`, `iniciar-sica.ps1` y la tarea automática actual
+de VS Code están preparados para Windows. En macOS y Linux se deben utilizar
+los siguientes pasos.
+
+#### Requisitos
+
+- JDK 17 o superior.
+- Maven 3.9 o superior.
+- Docker con Docker Compose versión 2.
+- Git, si el proyecto se descargará mediante clonación.
+
+En macOS normalmente se utiliza Docker Desktop. En Linux se puede utilizar
+Docker Engine con el complemento Docker Compose.
+
+Comprueba las instalaciones:
+
+~~~bash
+java -version
+mvn -version
+docker --version
+docker compose version
+~~~
+
+Los cuatro comandos deben mostrar una versión. Maven también debe indicar que
+utiliza un JDK 17 o superior.
+
+#### Ubicar el proyecto
+
+Clona o descarga el repositorio y entra en la raíz `SICA`:
+
+~~~bash
+cd ruta/donde/esta/SICA
+ls
+~~~
+
+Deben aparecer:
+
+~~~text
+compose.yaml
+docker/
+pom.xml
+sica/
+~~~
+
+Los comandos de Docker deben ejecutarse desde esta raíz y no desde la
+subcarpeta `sica`.
+
+#### Crear las contraseñas técnicas
+
+Durante la primera ejecución, desde la raíz del proyecto:
+
+~~~bash
+POSTGRES_PASSWORD="pg_$(openssl rand -hex 16)"
+SICA_APP_PASSWORD="app_$(openssl rand -hex 16)"
+printf 'POSTGRES_PASSWORD=%s\nSICA_APP_PASSWORD=%s\n' "$POSTGRES_PASSWORD" "$SICA_APP_PASSWORD" > .env
+~~~
+
+El archivo `.env` está excluido de Git. Contiene credenciales técnicas locales
+y no debe publicarse ni compartirse.
+
+#### Configurar la conexión JDBC
+
+Sin cerrar la terminal anterior, ejecuta:
+
+~~~bash
+mkdir -p "$HOME/.sica"
+printf 'url=jdbc:postgresql://localhost:5433/sica_db\nusuario=sica_app\npassword=%s\n' "$SICA_APP_PASSWORD" > "$HOME/.sica/conexion.properties"
+chmod 600 "$HOME/.sica/conexion.properties"
+~~~
+
+La aplicación utilizará:
+
+~~~text
+jdbc:postgresql://localhost:5433/sica_db
+~~~
+
+El puerto `5433` evita conflictos con una instalación local de PostgreSQL que
+ya utilice el puerto `5432`.
+
+#### Iniciar PostgreSQL
+
+Desde la raíz `SICA`:
+
+~~~bash
+docker compose up -d --wait
+docker compose ps
+~~~
+
+En el primer inicio Docker descarga `postgres:17-alpine`, crea `sica_db`,
+ejecuta `schema.sql`, `data.sql` y `docker/init/03-security.sh`, crea el usuario
+técnico limitado `sica_app` y espera hasta que PostgreSQL esté saludable.
+
+Si ocurre un error:
+
+~~~bash
+docker compose logs postgres
+~~~
+
+#### Compilar y ejecutar SICA
+
+Entra en el módulo Java, ejecuta las pruebas e inicia JavaFX:
+
+~~~bash
+cd sica
+mvn test
+mvn javafx:run
+~~~
+
+Durante la primera ejecución Maven descargará las dependencias. Después debe
+abrirse la ventana de inicio de sesión.
+
+En los inicios posteriores no es necesario volver a generar las contraseñas:
+
+~~~bash
+cd ruta/donde/esta/SICA
+docker compose up -d --wait
+cd sica
+mvn javafx:run
+~~~
+
+Los datos se conservan en el volumen `sica_postgres_data`.
+
+#### Uso desde VS Code
+
+La configuración `Ejecutar SICA` incluida actualmente llama primero a
+`powershell.exe`, por lo que corresponde a Windows. En macOS y Linux se debe
+utilizar la terminal integrada con los comandos anteriores. No se debe ejecutar
+la tarea `Preparar PostgreSQL SICA`, porque llama a `iniciar-sica.ps1`.
+
+#### Detener PostgreSQL
+
+Desde la raíz:
+
+~~~bash
+docker compose down
+~~~
+
+El comando detiene el contenedor, pero conserva los datos.
+
+#### Reconstruir la base desde cero
+
+El siguiente procedimiento elimina todos los usuarios, visitas, incidentes y
+registros creados durante las pruebas:
+
+~~~bash
+docker compose down -v
+docker compose up -d --wait
+~~~
+
+Debe utilizarse solamente cuando se quiera reconstruir completamente la base.
+Los scripts de inicialización se ejecutan únicamente cuando el volumen está
+vacío.
+
+#### Problemas frecuentes en Linux
+
+Si Docker está instalado pero detenido:
+
+~~~bash
+sudo systemctl status docker
+sudo systemctl start docker
+~~~
+
+Si el usuario no tiene permisos para ejecutar Docker:
+
+~~~bash
+sudo usermod -aG docker "$USER"
+~~~
+
+Después se debe cerrar completamente la sesión del sistema operativo y volver
+a entrar.
+
+Si JavaFX no abre la ventana en Debian o Ubuntu, comprueba que existe una sesión
+gráfica e instala las bibliotecas necesarias:
+
+~~~bash
+sudo apt update
+sudo apt install libgtk-3-0 libx11-6 libxtst6 libxrender1 libxi6
+~~~
+
+Si Maven utiliza una versión incorrecta de Java:
+
+~~~bash
+mvn -version
+~~~
+
+Configura `JAVA_HOME` con la ubicación del JDK 17 o superior antes de volver a
+ejecutar el proyecto.
+
+#### Diagnóstico de conexión
+
+Comprueba el contenedor y la configuración local:
+
+~~~bash
+docker compose ps
+cat "$HOME/.sica/conexion.properties"
+~~~
+
+La URL debe usar `localhost`, puerto `5433` y base `sica_db`; el usuario debe
+ser `sica_app` y la contraseña debe coincidir con `SICA_APP_PASSWORD` de `.env`.
+
+Para ejecutar las pruebas SQL desde la raíz usando PostgreSQL dentro del
+contenedor:
+
+~~~bash
+docker compose exec -T postgres psql -U postgres -d sica_db < sica/database/tests/01_integrity_transactions.sql
+~~~
+
 ### Inicio recomendado con Docker
 
 Esta es la forma recomendada de ejecutar SICA en otro equipo. Docker reemplaza
