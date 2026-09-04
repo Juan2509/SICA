@@ -12,8 +12,22 @@ do
 done
 
 echo "Iniciando el escritorio virtual de SICA..."
-Xvfb :99 -screen 0 1400x900x24 -ac -nolisten tcp &
+
+# Al reiniciar el mismo contenedor pueden quedar el bloqueo y el socket del
+# servidor grafico anterior. Se eliminan porque ya no existe aquel proceso.
+rm -f /tmp/.X99-lock /tmp/.X11-unix/X99
+mkdir -p /tmp/.X11-unix
+
+Xvfb :99 -screen 0 1400x900x24 -ac -nolisten tcp \
+    >/tmp/xvfb.log 2>&1 &
+xvfb_pid=$!
+
 while [ ! -S /tmp/.X11-unix/X99 ]; do
+    if ! kill -0 "$xvfb_pid" 2>/dev/null; then
+        echo "No fue posible iniciar el escritorio virtual:"
+        cat /tmp/xvfb.log
+        exit 1
+    fi
     sleep 1
 done
 fluxbox -display :99 >/tmp/fluxbox.log 2>&1 &
