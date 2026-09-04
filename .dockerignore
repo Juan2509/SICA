@@ -1,0 +1,8 @@
+.git
+.gitignore
+.vscode
+.env
+.m2-qa
+**/target
+README*
+*.log

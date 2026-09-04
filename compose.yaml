@@ -8,8 +8,8 @@ services:
     environment:
       POSTGRES_DB: sica_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      SICA_APP_PASSWORD: ${SICA_APP_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sica_postgres_local}
+      SICA_APP_PASSWORD: ${SICA_APP_PASSWORD:-sica_app_local}
       TZ: America/Bogota
     ports:
       - "127.0.0.1:5433:5432"
@@ -24,6 +24,24 @@ services:
       timeout: 5s
       retries: 12
       start_period: 10s
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    image: sica-app:local
+    container_name: sica-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SICA_DB_URL: jdbc:postgresql://postgres:5432/sica_db
+      SICA_DB_USER: sica_app
+      SICA_DB_PASSWORD: ${SICA_APP_PASSWORD:-sica_app_local}
+      DISPLAY: :99
+      JAVA_TOOL_OPTIONS: -Dprism.order=sw -Djava.awt.headless=false
+    ports:
+      - "127.0.0.1:6080:6080"
 
 volumes:
   sica_postgres_data:

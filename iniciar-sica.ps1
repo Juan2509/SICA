@@ -42,7 +42,9 @@ New-Item -ItemType Directory -Path $localConfigDirectory -Force | Out-Null
 
 Push-Location $projectRoot
 try {
-    docker compose up -d --wait
+    # En VS Code solamente se inicia PostgreSQL.
+    # La aplicacion Java se abre despues mediante Ejecutar SICA.
+    docker compose up -d --wait postgres
 } finally {
     Pop-Location
 }
