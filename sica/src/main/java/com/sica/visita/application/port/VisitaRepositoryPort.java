@@ -30,4 +30,6 @@ public interface VisitaRepositoryPort {
     void cerrarPorSistema(Long visitaId, LocalDateTime fechaHoraCierre);
 
     List<Visita> listarPorEstado(EstadoVisita estado);
+
+    List<Visita> listarPorHora(Long fechaHoraCheckIn);
 }

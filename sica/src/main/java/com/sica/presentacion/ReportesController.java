@@ -72,6 +72,21 @@ public class ReportesController {
         }
     }
 
+    @FXML
+
+    private void generarReporteHora() {
+        try {
+            var reporte = reporteService.generarReportePorHora(
+                reportetable.setItems(FXCollections.observableArrayList(reporte));
+                totalLabel.setText(reporte.size() + " vitas encontradas en esta hora");
+                mensajeLabel.getStyleClass().setAll("screen-success");
+            ); 
+        } catch (RuntimeException e) {
+            mensajelabel.setText(e.getmessage());
+            mensajeLabel.getStyleClass().setAll("screen-error")
+        }
+    }
+
     private String formatear(LocalDateTime fecha) {
         return fecha == null ? "-" : fecha.format(FECHA);
     }

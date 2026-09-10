@@ -25,6 +25,7 @@
             <Button fx:id="incidentesButton" text="Incidentes" onAction="#seleccionarModulo" maxWidth="Infinity" styleClass="nav-button"/>
             <Button fx:id="auditoriaButton" text="Auditoria" onAction="#seleccionarModulo" maxWidth="Infinity" styleClass="nav-button"/>
             <Button fx:id="reportesButton" text="Reportes" onAction="#seleccionarModulo" maxWidth="Infinity" styleClass="nav-button"/>
+            <Button fx:id="reportes_horaButton" text="Reportes por hora" onAction="#seleccionarModulo" maxWidth="Infinity" styleClass="nav-button"/>
             <Region VBox.vgrow="ALWAYS"/>
             <Button text="Cerrar sesion" onAction="#cerrarSesion" maxWidth="Infinity" styleClass="logout-button"/>
         </VBox>

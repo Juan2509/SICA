@@ -30,6 +30,8 @@ public interface PersonaRepositoryPort {
 
     Optional<Persona> buscarPorId(Long id);
 
+    Optional<Persona> buscarPorHora(Long fechaHoraCheckIn)
+
     default List<Persona> listarTodos() {
         return List.of();
     }

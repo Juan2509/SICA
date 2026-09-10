@@ -14,7 +14,6 @@
         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="form-card">
             <Label text="Estado de la visita" styleClass="field-label"/>
             <ComboBox fx:id="estadoCombo" prefWidth="280"/>
-            <Button text="Generar reporte" onAction="#generar" styleClass="primary-button"/>
             <Button text="Generar reporte de ocupación por hora" onAction="#generarReporteHora" styleClass="primary-button"/>
             <Region HBox.hgrow="ALWAYS"/><Label fx:id="totalLabel" text="Selecciona un estado" styleClass="info-title"/>
         </HBox>
